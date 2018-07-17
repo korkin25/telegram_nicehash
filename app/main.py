@@ -108,6 +108,8 @@ def check(kk):
 @bot.message_handler(commands=['data'])
 def get_data_and_send(message):
 	if message.chat.id == msg_id:
+		if price_currency_int == 0:
+			check(0)
 		str_send = '1 BTC = ' + str(price_currency_int) + ' ' + currency + '\n\n' + 'Алгоритмы майнинга: ' + str(', '.join(str(v) for v in w) + '\n' + 'Активные воркеры: ' + str(total_workers) + '\n' + 'Доход в день: ' + str(profit_btc_day) + ' BTC (' + str(profit_fiat_day) + ' ' + currency + ')\n' + 'Невыплаченный баланс: ' + str(balance_btc) + ' BTC (' + str(balance_fiat) + ' ' + currency + ')')
 		print(str_send)
 		bot.send_message(msg_id, str_send)
