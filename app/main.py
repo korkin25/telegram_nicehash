@@ -1,16 +1,31 @@
 # -*- coding: utf-8 -*-
-import time
-import telebot
-import config
-import urllib.request
+import configparser
 import json
-import threading
 import locale
+import os
 import re
+import subprocess
+import threading
+import time
+import urllib.request
+
+import telebot
 
 
-bot = telebot.TeleBot(config.token)
-msg_id = config.msg_id
+def crudConfig():
+	subprocess.call("python3 config_init.py", shell=True)
+
+
+path = "Settings.ini"
+
+if not os.path.exists(path):
+	crudConfig()
+
+config = configparser.ConfigParser()
+config.read(path)
+
+bot = telebot.TeleBot(config.get('Settings', 'token'))
+msg_id = int(config.get('Settings', 'msg_id'))
 
 addr = '3MLnyrNo3yoAS8a2YdD7AU2638AGZJKbyh'
 currency = 'RUB'
@@ -116,6 +131,17 @@ def get_data_and_send(message):
 
 
 @bot.message_handler(commands=['start'])
+def get_data_and_send(message):
+	global msg_id
+	# Первый пользователь, отправивший команду start боту становится "владельцем"
+	# Запросы от других пользователей будут игнорироваться
+	if int(config.get("Settings", "msg_id")) == 0:
+		msg_id = message.chat.id
+		config.set("Settings", "msg_id", str(msg_id))
+		bot.send_message(msg_id, "Теперь вы владелец")
+
+
+@bot.message_handler(commands=['start_monitor'])
 def get_data_and_send(message):
 	if message.chat.id == msg_id:
 		global k
