@@ -9,17 +9,13 @@ import threading
 import time
 import urllib.request
 
+import strings
 import telebot
-
-
-def crudConfig():
-	subprocess.call("python3 config_init.py", shell=True)
-
 
 path = "Settings.ini"
 
 if not os.path.exists(path):
-	crudConfig()
+	subprocess.call("python3 config_init.py", shell=True)
 
 config = configparser.ConfigParser()
 config.read(path)
@@ -27,8 +23,9 @@ config.read(path)
 bot = telebot.TeleBot(config.get('Settings', 'token'))
 msg_id = int(config.get('Settings', 'msg_id'))
 
-addr = '3MLnyrNo3yoAS8a2YdD7AU2638AGZJKbyh'
-currency = 'RUB'
+addr = config.get('Settings', 'address')
+currency = config.get('Settings', 'currency')
+
 stats = 'https://api.nicehash.com/api?method=stats.provider.ex&addr=' + addr
 price = 'http://api.coindesk.com/v1/bpi/currentprice/' + currency + '.json'
 
@@ -115,22 +112,12 @@ def check(kk):
 		workers1 = int(data_[2])
 
 	if workers0 > workers1:
-		bot.send_message(msg_id, 'Воркер перестал работать')
+		bot.send_message(msg_id, strings.worker_stop)
 	if workers0 < workers1:
-		bot.send_message(msg_id, 'Новый воркер')
+		bot.send_message(msg_id, strings.worker_new)
 
 
-@bot.message_handler(commands=['data'])
-def get_data_and_send(message):
-	if message.chat.id == msg_id:
-		if price_currency_int == 0:
-			check(0)
-		str_send = '1 BTC = ' + str(price_currency_int) + ' ' + currency + '\n\n' + 'Алгоритмы майнинга: ' + str(', '.join(str(v) for v in w) + '\n' + 'Активные воркеры: ' + str(total_workers) + '\n' + 'Доход в день: ' + str(profit_btc_day) + ' BTC (' + str(profit_fiat_day) + ' ' + currency + ')\n' + 'Невыплаченный баланс: ' + str(balance_btc) + ' BTC (' + str(balance_fiat) + ' ' + currency + ')')
-		print(str_send)
-		bot.send_message(msg_id, str_send)
-
-
-@bot.message_handler(commands=['start'])
+@bot.message_handler(commands=[strings.start])
 def get_data_and_send(message):
 	global msg_id
 	# Первый пользователь, отправивший команду start боту становится "владельцем"
@@ -138,10 +125,29 @@ def get_data_and_send(message):
 	if int(config.get("Settings", "msg_id")) == 0:
 		msg_id = message.chat.id
 		config.set("Settings", "msg_id", str(msg_id))
-		bot.send_message(msg_id, "Теперь вы владелец")
+		with open(path, "w") as config_file:
+			config.write(config_file)
+		bot.send_message(msg_id, strings.owner_set)
+
+	if message.chat.id == msg_id:
+		bot.send_message(message.chat.id, strings.owner_already)
 
 
-@bot.message_handler(commands=['start_monitor'])
+@bot.message_handler(commands=[strings.get_mining_data])
+def get_data_and_send(message):
+	if message.chat.id == msg_id:
+		if price_currency_int == 0:
+			check(0)
+		str_send = '1 BTC = ' + str(price_currency_int) + ' ' + currency + '\n\n' + strings.mining_algo + str(
+			', '.join(str(v) for v in w) + '\n' + strings.workers_active + str(
+				total_workers) + '\n' + strings.profit_per_day + str(profit_btc_day) + ' BTC (' + str(
+				profit_fiat_day) + ' ' + currency + ')\n' + strings.unpaid + str(balance_btc) + ' BTC (' + str(
+				balance_fiat) + ' ' + currency + ')')
+		print(str_send)
+		bot.send_message(msg_id, str_send)
+
+
+@bot.message_handler(commands=[strings.start_mining_monitoring])
 def get_data_and_send(message):
 	if message.chat.id == msg_id:
 		global k
@@ -153,7 +159,7 @@ def get_data_and_send(message):
 			time.sleep(30)
 
 
-@bot.message_handler(commands=['stop'])
+@bot.message_handler(commands=[strings.stop_mining_monitoring])
 def get_data_and_send(message):
 	if message.chat.id == msg_id:
 		global monitor
@@ -161,4 +167,7 @@ def get_data_and_send(message):
 
 
 if __name__ == '__main__':
-	bot.polling(none_stop=True)
+	try:
+		bot.polling(none_stop=True)
+	except Exception as e:
+		time.sleep(15)
