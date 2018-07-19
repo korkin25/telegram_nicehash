@@ -30,6 +30,7 @@ stats = 'https://api.nicehash.com/api?method=stats.provider.ex&addr=' + addr
 price = 'http://api.coindesk.com/v1/bpi/currentprice/' + currency + '.json'
 
 monitor = False
+set_a = False
 workers0 = 0
 workers1 = 0
 k = 0
@@ -102,7 +103,35 @@ def start():
 	return price_currency_int, w, total_workers, profit_btc_day, profit_fiat_day, balance_btc, balance_fiat
 
 
+# Исправить критичный баг
+# Обновить BTC адрес сразу после ввода, а не после перезапуска бота
+def set_address(address):
+	global addr
+	if address == addr:
+		return False
+	else:
+		config.set('Settings', 'address', address)
+		addr = address
+		with open(path, "w") as config_file:
+			config.write(config_file)
+
+
+def set_address_():
+	global set_a
+	set_a = True
+	bot.send_message(msg_id, strings.addr_set)
+
+
+def check_address(address):
+	if address == '':
+		return False
+	else:
+		return True
+	# Добавить проверку валидности адреса через API NiceHash
+
+
 def check(kk):
+	# Исправить баг с уведомлениями сразу после запуска
 	global workers0
 	global workers1
 	data_ = start()
@@ -128,6 +157,9 @@ def get_data_and_send(message):
 		with open(path, "w") as config_file:
 			config.write(config_file)
 		bot.send_message(msg_id, strings.owner_set)
+	else:
+		if message.chat.id != msg_id:
+			bot.send_message(message.chat.id, strings.forbidden)
 
 	if message.chat.id == msg_id:
 		bot.send_message(message.chat.id, strings.owner_already)
@@ -136,8 +168,7 @@ def get_data_and_send(message):
 @bot.message_handler(commands=[strings.get_mining_data])
 def get_data_and_send(message):
 	if message.chat.id == msg_id:
-		if price_currency_int == 0:
-			check(0)
+		check(0)
 		str_send = '1 BTC = ' + str(price_currency_int) + ' ' + currency + '\n\n' + strings.mining_algo + str(
 			', '.join(str(v) for v in w) + '\n' + strings.workers_active + str(
 				total_workers) + '\n' + strings.profit_per_day + str(profit_btc_day) + ' BTC (' + str(
@@ -150,13 +181,17 @@ def get_data_and_send(message):
 @bot.message_handler(commands=[strings.start_mining_monitoring])
 def get_data_and_send(message):
 	if message.chat.id == msg_id:
-		global k
-		while True:
-			check(k)
-			k += 1
-			if k == 2:
-				k = 0
-			time.sleep(30)
+		if check_address(addr):
+			global k
+			while True:
+				check(k)
+				k += 1
+				if k == 2:
+					k = 0
+				time.sleep(30)
+		else:
+			set_address_()
+		# Добавить запуск мониторинга после получения валидного адреса (после устранения бага ввода адреса)
 
 
 @bot.message_handler(commands=[strings.stop_mining_monitoring])
@@ -164,6 +199,24 @@ def get_data_and_send(message):
 	if message.chat.id == msg_id:
 		global monitor
 		monitor = False
+
+
+@bot.message_handler(commands=[strings.set_address])
+def get_data_and_send(message):
+	if message.chat.id == msg_id:
+		global set_a
+		set_a = True
+		bot.send_message(msg_id, strings.addr_set)
+
+
+@bot.message_handler(content_types='text')
+def get_data_and_send(message):
+	global set_a
+	if message.chat.id == msg_id:
+		if set_a:
+			set_address(message.text)
+			bot.send_message(msg_id, strings.addr_ok)
+			set_a = False
 
 
 if __name__ == '__main__':
