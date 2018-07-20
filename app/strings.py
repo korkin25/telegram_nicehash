@@ -1,3 +1,10 @@
+# команды
+start = 'start'
+get_mining_data = 'data'
+start_mining_monitoring = 'start_monitor'
+stop_mining_monitoring = 'stop_monitor'
+set_address = 'set_address'
+
 worker_stop = 'Воркер перестал работать'
 worker_new = 'Новый воркер'
 
@@ -12,10 +19,5 @@ forbidden = 'Доступ запрещён'
 
 addr_set = 'Введите адрес'
 addr_ok = 'Установлено'
-
-# команды
-start = 'start'
-get_mining_data = 'data'
-start_mining_monitoring = 'start_monitor'
-stop_mining_monitoring = 'stop_monitor'
-set_address = 'set_address'
+addr_invalid = 'Невалидный адрес'
+addr_enter_new = 'повторите попытку' + ' /' + set_address

@@ -103,31 +103,40 @@ def start():
 	return price_currency_int, w, total_workers, profit_btc_day, profit_fiat_day, balance_btc, balance_fiat
 
 
-# Исправить критичный баг
-# Обновить BTC адрес сразу после ввода, а не после перезапуска бота
 def set_address(address):
 	global addr
+	global stats
+	global set_a
+	addr_ = ''
+	stats_ = ''
 	if address == addr:
 		return False
 	else:
 		config.set('Settings', 'address', address)
+		addr_ = addr
+		stats_ = stats
 		addr = address
-		with open(path, "w") as config_file:
-			config.write(config_file)
-
-
-def set_address_():
-	global set_a
-	set_a = True
-	bot.send_message(msg_id, strings.addr_set)
+		stats = 'https://api.nicehash.com/api?method=stats.provider.ex&addr=' + addr
+		if check_address(address):
+			with open(path, "w") as config_file:
+				config.write(config_file)
+			bot.send_message(msg_id, strings.addr_ok)
+			set_a = False
+		else:
+			bot.send_message(msg_id, strings.addr_invalid + ', ' + strings.addr_enter_new)
+			set_a = False
+			addr = addr_
+			stats = stats_
 
 
 def check_address(address):
 	if address == '':
 		return False
-	else:
+	try:
+		check(0)
 		return True
-	# Добавить проверку валидности адреса через API NiceHash
+	except:
+		return False
 
 
 def check(kk):
@@ -168,30 +177,34 @@ def get_data_and_send(message):
 @bot.message_handler(commands=[strings.get_mining_data])
 def get_data_and_send(message):
 	if message.chat.id == msg_id:
-		check(0)
-		str_send = '1 BTC = ' + str(price_currency_int) + ' ' + currency + '\n\n' + strings.mining_algo + str(
-			', '.join(str(v) for v in w) + '\n' + strings.workers_active + str(
-				total_workers) + '\n' + strings.profit_per_day + str(profit_btc_day) + ' BTC (' + str(
-				profit_fiat_day) + ' ' + currency + ')\n' + strings.unpaid + str(balance_btc) + ' BTC (' + str(
-				balance_fiat) + ' ' + currency + ')')
-		print(str_send)
-		bot.send_message(msg_id, str_send)
+		try:
+			check(1)
+			str_send = '1 BTC = ' + str(price_currency_int) + ' ' + currency + '\n\n' + strings.mining_algo + str(
+				', '.join(str(v) for v in w) + '\n' + strings.workers_active + str(
+					total_workers) + '\n' + strings.profit_per_day + str(profit_btc_day) + ' BTC (' + str(
+					profit_fiat_day) + ' ' + currency + ')\n' + strings.unpaid + str(balance_btc) + ' BTC (' + str(
+					balance_fiat) + ' ' + currency + ')')
+			print(str_send)
+			bot.send_message(msg_id, str_send)
+		except:
+			bot.send_message(msg_id, strings.addr_invalid)
 
 
 @bot.message_handler(commands=[strings.start_mining_monitoring])
 def get_data_and_send(message):
 	if message.chat.id == msg_id:
 		if check_address(addr):
-			global k
-			while True:
-				check(k)
-				k += 1
-				if k == 2:
-					k = 0
-				time.sleep(30)
-		else:
-			set_address_()
-		# Добавить запуск мониторинга после получения валидного адреса (после устранения бага ввода адреса)
+			try:
+				check(1)
+				global k
+				while True:
+					check(k)
+					k += 1
+					if k == 2:
+						k = 0
+					time.sleep(30)
+			except:
+				bot.send_message(msg_id, strings.addr_invalid)
 
 
 @bot.message_handler(commands=[strings.stop_mining_monitoring])
@@ -215,8 +228,6 @@ def get_data_and_send(message):
 	if message.chat.id == msg_id:
 		if set_a:
 			set_address(message.text)
-			bot.send_message(msg_id, strings.addr_ok)
-			set_a = False
 
 
 if __name__ == '__main__':
