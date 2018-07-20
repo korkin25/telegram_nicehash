@@ -33,6 +33,7 @@ monitor = False
 set_a = False
 workers0 = 0
 workers1 = 0
+ch_notify = False
 k = 0
 w = []
 price_currency_int, total_workers, profit_btc_day, profit_fiat_day, balance_btc, balance_fiat = 0, 0, 0, 0, 0, 0
@@ -133,26 +134,30 @@ def check_address(address):
 	if address == '':
 		return False
 	try:
-		check(0)
+		check(3)
 		return True
 	except:
 		return False
 
 
 def check(kk):
-	# Исправить баг с уведомлениями сразу после запуска
 	global workers0
 	global workers1
+	global total_workers
+	global ch_notify
 	data_ = start()
-	if kk % 2 == 0:
-		workers0 = int(data_[2])
-	if kk % 2 == 1:
-		workers1 = int(data_[2])
-
-	if workers0 > workers1:
-		bot.send_message(msg_id, strings.worker_stop)
-	if workers0 < workers1:
-		bot.send_message(msg_id, strings.worker_new)
+	# bot.send_message(msg_id, "checking")  # для отладки
+	if kk != 3:
+		if kk % 2 == 0:
+			workers0 = int(data_[2])
+		if kk % 2 == 1:
+			workers1 = int(data_[2])
+		ch_notify += 1
+		if ch_notify > 2:
+			ch_notify = 2  # Чтобы лишний раз не расходовать память
+		if ch_notify >= 2:
+			if workers0 != workers1:
+				bot.send_message(msg_id, strings.workers_active + str(total_workers))
 
 
 @bot.message_handler(commands=[strings.start])
@@ -178,7 +183,7 @@ def get_data_and_send(message):
 def get_data_and_send(message):
 	if message.chat.id == msg_id:
 		try:
-			check(1)
+			check(3)
 			str_send = '1 BTC = ' + str(price_currency_int) + ' ' + currency + '\n\n' + strings.mining_algo + str(
 				', '.join(str(v) for v in w) + '\n' + strings.workers_active + str(
 					total_workers) + '\n' + strings.profit_per_day + str(profit_btc_day) + ' BTC (' + str(
@@ -192,26 +197,36 @@ def get_data_and_send(message):
 
 @bot.message_handler(commands=[strings.start_mining_monitoring])
 def get_data_and_send(message):
+	# Исправить ошибку, из-за которой бот перестает принимать команды после быстрого ввода подряд команд запуска и остановки
 	if message.chat.id == msg_id:
-		if check_address(addr):
-			try:
-				check(1)
+		global monitor
+		if not monitor:
+			monitor = True
+			bot.send_message(msg_id, strings.monitor_start)
+			if check_address(addr):
 				global k
-				while True:
-					check(k)
-					k += 1
-					if k == 2:
-						k = 0
-					time.sleep(30)
-			except:
-				bot.send_message(msg_id, strings.addr_invalid)
+				try:
+					while monitor:
+						check(k)
+						k += 1
+						if k == 2:
+							k = 0
+						time.sleep(30)
+				except:
+					bot.send_message(msg_id, strings.addr_invalid)
+		else:
+			bot.send_message(msg_id, strings.monitor_already_started)
 
 
 @bot.message_handler(commands=[strings.stop_mining_monitoring])
 def get_data_and_send(message):
 	if message.chat.id == msg_id:
 		global monitor
-		monitor = False
+		if monitor:
+			monitor = False
+			bot.send_message(msg_id, strings.monitor_stop)
+		else:
+			bot.send_message(msg_id, strings.monitor_already_stopped)
 
 
 @bot.message_handler(commands=[strings.set_address])

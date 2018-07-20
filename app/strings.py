@@ -5,8 +5,10 @@ start_mining_monitoring = 'start_monitor'
 stop_mining_monitoring = 'stop_monitor'
 set_address = 'set_address'
 
-worker_stop = 'Воркер перестал работать'
-worker_new = 'Новый воркер'
+monitor_start = 'Мониторинг запущен'
+monitor_stop = 'Мониторинг остановлен'
+monitor_already_started = 'Мониторинг уже был запущен'
+monitor_already_stopped = 'Мониторинг не запущен'
 
 mining_algo = 'Алгоритмы майнинга: '
 workers_active = 'Активные воркеры: '
@@ -14,7 +16,7 @@ profit_per_day = 'Доход в день: '
 unpaid = 'Невыплаченный баланс: '
 
 owner_set = 'Теперь вы владелец'
-owner_already = "Вы уже зарегистрированы как владелец"
+owner_already = 'Вы уже зарегистрированы как владелец'
 forbidden = 'Доступ запрещён'
 
 addr_set = 'Введите адрес'
