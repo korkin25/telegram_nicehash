@@ -30,6 +30,7 @@ stats = 'https://api.nicehash.com/api?method=stats.provider.ex&addr=' + addr
 price = 'http://api.coindesk.com/v1/bpi/currentprice/' + currency + '.json'
 
 monitor = False
+loop_term = True
 set_a = False
 workers0 = 0
 workers1 = 0
@@ -197,23 +198,28 @@ def get_data_and_send(message):
 
 @bot.message_handler(commands=[strings.start_mining_monitoring])
 def get_data_and_send(message):
-	# Исправить ошибку, из-за которой бот перестает принимать команды после быстрого ввода подряд команд запуска и остановки
 	if message.chat.id == msg_id:
 		global monitor
+		global loop_term
 		if not monitor:
-			monitor = True
-			bot.send_message(msg_id, strings.monitor_start)
-			if check_address(addr):
-				global k
-				try:
-					while monitor:
-						check(k)
-						k += 1
-						if k == 2:
-							k = 0
-						time.sleep(30)
-				except:
-					bot.send_message(msg_id, strings.addr_invalid)
+			if loop_term:
+				monitor = True
+				bot.send_message(msg_id, strings.monitor_start)
+				if check_address(addr):
+					global k
+					try:
+						while monitor:
+							loop_term = False
+							check(k)
+							k += 1
+							if k == 2:
+								k = 0
+							time.sleep(30)
+							loop_term = True
+					except:
+						bot.send_message(msg_id, strings.addr_invalid)
+			else:
+				bot.send_message(msg_id, strings.monitor_stops)
 		else:
 			bot.send_message(msg_id, strings.monitor_already_started)
 

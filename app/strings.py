@@ -6,8 +6,9 @@ stop_mining_monitoring = 'stop_monitor'
 set_address = 'set_address'
 
 monitor_start = 'Мониторинг запущен'
-monitor_stop = 'Мониторинг остановлен'
+monitor_stop = 'Мониторинг останавливается'
 monitor_already_started = 'Мониторинг уже был запущен'
+monitor_stops = 'Мониторинг ещё останавливается, повторите попытку немного позднее'
 monitor_already_stopped = 'Мониторинг не запущен'
 
 mining_algo = 'Алгоритмы майнинга: '
