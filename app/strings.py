@@ -4,12 +4,17 @@ get_mining_data = 'data'
 start_mining_monitoring = 'start_monitor'
 stop_mining_monitoring = 'stop_monitor'
 set_address = 'set_address'
+set_currency = 'set_currency'
 
 monitor_start = 'Мониторинг запущен'
 monitor_stop = 'Мониторинг останавливается'
 monitor_already_started = 'Мониторинг уже был запущен'
 monitor_stops = 'Мониторинг ещё останавливается, повторите попытку немного позднее'
 monitor_already_stopped = 'Мониторинг не запущен'
+
+select_curr = 'Выберите валюту для отображения'
+RUB = 'Российский рубль'
+UAH = 'Украинская гривна'
 
 mining_algo = 'Алгоритмы майнинга: '
 workers_active = 'Активные воркеры: '

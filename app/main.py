@@ -11,6 +11,7 @@ import urllib.request
 
 import strings
 import telebot
+from telebot import types
 
 path = "Settings.ini"
 
@@ -24,10 +25,10 @@ bot = telebot.TeleBot(config.get('Settings', 'token'))
 msg_id = int(config.get('Settings', 'msg_id'))
 
 addr = config.get('Settings', 'address')
-currency = config.get('Settings', 'currency')
+curr = config.get('Settings', 'currency')
 
 stats = 'https://api.nicehash.com/api?method=stats.provider.ex&addr=' + addr
-price = 'http://api.coindesk.com/v1/bpi/currentprice/' + currency + '.json'
+price = 'http://api.coindesk.com/v1/bpi/currentprice/' + curr + '.json'
 
 monitor = False
 loop_term = True
@@ -55,12 +56,12 @@ def start():
 	locale.setlocale(locale.LC_ALL, '')
 	reqPrice = urllib.request.Request(price, headers=hdr)
 	rPrice = urllib.request.urlopen(reqPrice).read()
-	cccc = re.split(currency, str(rPrice))
+	cccc = re.split(curr, str(rPrice))
 	ccc = re.split(r'"', cccc[2])
 	cc = re.split(r',', ccc[4])
 	cc_ = cc[0] + cc[1]
 	priceCurrency = float(cc_)
-	print("\n\nUsing Currency: BTC/{0} = {1:,.2f}".format(currency, priceCurrency))
+	print("\n\nUsing Currency: BTC/{0} = {1:,.2f}".format(curr, priceCurrency))
 
 	rStats = urllib.request.urlopen(reqStats).read()
 	cont = json.loads(rStats.decode('utf-8'))
@@ -85,12 +86,12 @@ def start():
 				print("Accepted Speed: {0} {1}/s".format(item['data'][0]['a'], item['suffix']))
 				print("Profitability: {0} BTC/day or {1:,.2f} {2}/day".format(
 					float(item['profitability']) * float(item['data'][0]['a']),
-					float(item['profitability']) * float(item['data'][0]['a']) * priceCurrency, currency))
+					float(item['profitability']) * float(item['data'][0]['a']) * priceCurrency, curr))
 
 			if (len(json.loads(rWorker.decode('utf-8'))['result']['workers']) >= 1):
 				profitability += float(float(item['profitability']) * float(item['data'][0]['a']))
 			print("Balance: {0} BTC or {1:,.2f} {2}".format(item['data'][1], float(item['data'][1]) * priceCurrency,
-															currency))
+															curr))
 			print("---------------------------------------------------")
 	except:
 		return ConnectionAbortedError
@@ -131,6 +132,17 @@ def set_address(address):
 			stats = stats_
 
 
+def set_currency(currency):
+	global curr
+	global price
+
+	curr = currency
+	price = 'http://api.coindesk.com/v1/bpi/currentprice/' + curr + '.json'
+	config.set('Settings', 'currency', curr)
+	with open(path, "w") as config_file:
+		config.write(config_file)
+
+
 def check_address(address):
 	if address == '':
 		return False
@@ -162,7 +174,7 @@ def check(kk):
 
 
 @bot.message_handler(commands=[strings.start])
-def get_data_and_send(message):
+def a(message):
 	global msg_id
 	# Первый пользователь, отправивший команду start боту становится "владельцем"
 	# Запросы от других пользователей будут игнорироваться
@@ -181,15 +193,15 @@ def get_data_and_send(message):
 
 
 @bot.message_handler(commands=[strings.get_mining_data])
-def get_data_and_send(message):
+def a(message):
 	if message.chat.id == msg_id:
 		try:
 			check(3)
-			str_send = '1 BTC = ' + str(price_currency_int) + ' ' + currency + '\n\n' + strings.mining_algo + str(
+			str_send = '1 BTC = ' + str(price_currency_int) + ' ' + curr + '\n\n' + strings.mining_algo + str(
 				', '.join(str(v) for v in w) + '\n' + strings.workers_active + str(
 					total_workers) + '\n' + strings.profit_per_day + str(profit_btc_day) + ' BTC (' + str(
-					profit_fiat_day) + ' ' + currency + ')\n' + strings.unpaid + str(balance_btc) + ' BTC (' + str(
-					balance_fiat) + ' ' + currency + ')')
+					profit_fiat_day) + ' ' + curr + ')\n' + strings.unpaid + str(balance_btc) + ' BTC (' + str(
+					balance_fiat) + ' ' + curr + ')')
 			print(str_send)
 			bot.send_message(msg_id, str_send)
 		except:
@@ -197,7 +209,7 @@ def get_data_and_send(message):
 
 
 @bot.message_handler(commands=[strings.start_mining_monitoring])
-def get_data_and_send(message):
+def a(message):
 	if message.chat.id == msg_id:
 		global monitor
 		global loop_term
@@ -225,7 +237,7 @@ def get_data_and_send(message):
 
 
 @bot.message_handler(commands=[strings.stop_mining_monitoring])
-def get_data_and_send(message):
+def a(message):
 	if message.chat.id == msg_id:
 		global monitor
 		if monitor:
@@ -236,15 +248,35 @@ def get_data_and_send(message):
 
 
 @bot.message_handler(commands=[strings.set_address])
-def get_data_and_send(message):
+def a(message):
 	if message.chat.id == msg_id:
 		global set_a
 		set_a = True
 		bot.send_message(msg_id, strings.addr_set)
 
 
+@bot.message_handler(commands=[strings.set_currency])
+def a(message):
+	if message.chat.id == msg_id:
+		keyboard = types.InlineKeyboardMarkup()
+		button_rub = types.InlineKeyboardButton(text=strings.RUB, callback_data='RUB')
+		button_uah = types.InlineKeyboardButton(text=strings.UAH, callback_data='UAH')
+		keyboard.add(button_rub, button_uah)
+		bot.send_message(message.chat.id, strings.select_curr, reply_markup=keyboard)
+
+
+@bot.callback_query_handler(func=lambda call: True)
+def a(call):
+	if call.message:
+		set_currency(call.data)
+		if call.data == 'UAH':
+			bot.edit_message_text(chat_id=call.message.chat.id, message_id=call.message.message_id, text=strings.UAH)
+		if call.data == 'RUB':
+			bot.edit_message_text(chat_id=call.message.chat.id, message_id=call.message.message_id, text=strings.RUB)
+
+
 @bot.message_handler(content_types='text')
-def get_data_and_send(message):
+def a(message):
 	global set_a
 	if message.chat.id == msg_id:
 		if set_a:
