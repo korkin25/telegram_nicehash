@@ -57,9 +57,18 @@ def start():
 	reqPrice = urllib.request.Request(price, headers=hdr)
 	rPrice = urllib.request.urlopen(reqPrice).read()
 	cccc = re.split(curr, str(rPrice))
-	ccc = re.split(r'"', cccc[2])
-	cc = re.split(r',', ccc[4])
-	cc_ = cc[0] + cc[1]
+	if curr == 'USD':
+		cccc_i = -1
+		ccc_i = -1
+	else:
+		cccc_i = 2
+		ccc_i = 4
+	ccc = re.split(r'"', cccc[cccc_i])
+	cc = re.split(r',', ccc[ccc_i])
+	if curr == 'USD':
+		cc_ = cc[0][1:-4]
+	else:
+		cc_ = cc[0] + cc[1]
 	priceCurrency = float(cc_)
 	print("\n\nUsing Currency: BTC/{0} = {1:,.2f}".format(curr, priceCurrency))
 
@@ -259,9 +268,10 @@ def a(message):
 def a(message):
 	if message.chat.id == msg_id:
 		keyboard = types.InlineKeyboardMarkup()
+		button_usd = types.InlineKeyboardButton(text=strings.USD, callback_data='USD')
 		button_rub = types.InlineKeyboardButton(text=strings.RUB, callback_data='RUB')
 		button_uah = types.InlineKeyboardButton(text=strings.UAH, callback_data='UAH')
-		keyboard.add(button_rub, button_uah)
+		keyboard.add(button_usd, button_rub, button_uah)
 		bot.send_message(message.chat.id, strings.select_curr, reply_markup=keyboard)
 
 
@@ -269,10 +279,12 @@ def a(message):
 def a(call):
 	if call.message:
 		set_currency(call.data)
-		if call.data == 'UAH':
-			bot.edit_message_text(chat_id=call.message.chat.id, message_id=call.message.message_id, text=strings.UAH)
+		if call.data == 'USD':
+			bot.edit_message_text(chat_id=call.message.chat.id, message_id=call.message.message_id, text=strings.USD)
 		if call.data == 'RUB':
 			bot.edit_message_text(chat_id=call.message.chat.id, message_id=call.message.message_id, text=strings.RUB)
+		if call.data == 'UAH':
+			bot.edit_message_text(chat_id=call.message.chat.id, message_id=call.message.message_id, text=strings.UAH)
 
 
 @bot.message_handler(content_types='text')

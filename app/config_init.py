@@ -9,7 +9,7 @@ def create_config(path):
 	config.set('Settings', 'token', token)
 	config.set('Settings', 'msg_id', '0')
 	config.set('Settings', 'address', '')
-	config.set('Settings', 'currency', 'RUB')
+	config.set('Settings', 'currency', 'USD')
 
 	with open(path, 'w') as config_file:
 		config.write(config_file)
