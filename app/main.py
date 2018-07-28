@@ -40,6 +40,8 @@ k = 0
 w = []
 price_currency_int, total_workers, profit_btc_day, profit_fiat_day, balance_btc, balance_fiat = 0, 0, 0, 0, 0, 0
 
+keyboard = types.ReplyKeyboardMarkup(row_width=1, resize_keyboard=True)
+
 
 def start():
 	global price_currency_int
@@ -168,7 +170,6 @@ def check(kk):
 	global total_workers
 	global ch_notify
 	data_ = start()
-	# bot.send_message(msg_id, "checking")  # для отладки
 	if kk != 3:
 		if kk % 2 == 0:
 			workers0 = int(data_[2])
@@ -180,6 +181,22 @@ def check(kk):
 		if ch_notify >= 2:
 			if workers0 != workers1:
 				bot.send_message(msg_id, strings.workers_active + str(total_workers))
+	else:
+		int(data_[2])
+
+
+def set_keyboard(arg, rw):
+	global keyboard
+	keyboard = types.ReplyKeyboardMarkup(row_width=rw, resize_keyboard=True)
+	kb_data = types.KeyboardButton(text=strings.keyboard_data)
+	kb_start_m = types.KeyboardButton(text=strings.keyboard_start_monitor)
+	kb_stop_m = types.KeyboardButton(text=strings.keyboard_stop_monitor)
+	kb_set_a = types.KeyboardButton(text=strings.keyboard_set_address)
+	kb_set_c = types.KeyboardButton(text=strings.keyboard_set_currency)
+	if arg == 0:
+		keyboard.add(kb_set_a, kb_set_c)
+	if arg == 1:
+		keyboard.add(kb_data, kb_start_m, kb_stop_m, kb_set_a, kb_set_c)
 
 
 @bot.message_handler(commands=[strings.start])
@@ -193,17 +210,18 @@ def a(message):
 		with open(path, "w") as config_file:
 			config.write(config_file)
 		bot.send_message(msg_id, strings.owner_set)
+		set_keyboard(0, 1)
+		bot.send_message(message.chat.id, strings.what_do, reply_markup=keyboard)
 	else:
 		if message.chat.id != msg_id:
 			bot.send_message(message.chat.id, strings.forbidden)
+		if message.chat.id == msg_id:
+			bot.send_message(message.chat.id, strings.owner_already)
 
+
+def _get_mining_data(message):
 	if message.chat.id == msg_id:
-		bot.send_message(message.chat.id, strings.owner_already)
-
-
-@bot.message_handler(commands=[strings.get_mining_data])
-def a(message):
-	if message.chat.id == msg_id:
+		set_keyboard(1, 2)
 		try:
 			check(3)
 			str_send = '1 BTC = ' + str(price_currency_int) + ' ' + curr + '\n\n' + strings.mining_algo + str(
@@ -212,14 +230,20 @@ def a(message):
 					profit_fiat_day) + ' ' + curr + ')\n' + strings.unpaid + str(balance_btc) + ' BTC (' + str(
 					balance_fiat) + ' ' + curr + ')')
 			print(str_send)
-			bot.send_message(msg_id, str_send)
+			bot.send_message(msg_id, str_send, reply_markup=keyboard)
 		except:
-			bot.send_message(msg_id, strings.addr_invalid)
+			set_keyboard(0, 1)
+			bot.send_message(msg_id, strings.addr_invalid, reply_markup=keyboard)
 
 
-@bot.message_handler(commands=[strings.start_mining_monitoring])
+@bot.message_handler(commands=[strings.get_mining_data])
 def a(message):
+	_get_mining_data(message)
+
+
+def _start_mining_monitoring(message):
 	if message.chat.id == msg_id:
+		set_keyboard(1, 2)
 		global monitor
 		global loop_term
 		if not monitor:
@@ -238,15 +262,20 @@ def a(message):
 							time.sleep(30)
 							loop_term = True
 					except:
+						set_keyboard(0, 1)
 						bot.send_message(msg_id, strings.addr_invalid)
 			else:
-				bot.send_message(msg_id, strings.monitor_stops)
+				bot.send_message(msg_id, strings.monitor_stops, reply_markup=keyboard)
 		else:
-			bot.send_message(msg_id, strings.monitor_already_started)
+			bot.send_message(msg_id, strings.monitor_already_started, reply_markup=keyboard)
 
 
-@bot.message_handler(commands=[strings.stop_mining_monitoring])
+@bot.message_handler(commands=[strings.start_mining_monitoring])
 def a(message):
+	_start_mining_monitoring(message)
+
+
+def _stop_mining_monitoring(message):
 	if message.chat.id == msg_id:
 		global monitor
 		if monitor:
@@ -256,16 +285,25 @@ def a(message):
 			bot.send_message(msg_id, strings.monitor_already_stopped)
 
 
-@bot.message_handler(commands=[strings.set_address])
+@bot.message_handler(commands=[strings.stop_mining_monitoring])
 def a(message):
+	_stop_mining_monitoring(message)
+
+
+def _set_address(message):
 	if message.chat.id == msg_id:
+		set_keyboard(1, 2)
 		global set_a
 		set_a = True
 		bot.send_message(msg_id, strings.addr_set)
 
 
-@bot.message_handler(commands=[strings.set_currency])
+@bot.message_handler(commands=[strings.set_address])
 def a(message):
+	_set_address(message)
+
+
+def _set_currency(message):
 	if message.chat.id == msg_id:
 		keyboard = types.InlineKeyboardMarkup()
 		button_usd = types.InlineKeyboardButton(text=strings.USD, callback_data='USD')
@@ -273,6 +311,11 @@ def a(message):
 		button_uah = types.InlineKeyboardButton(text=strings.UAH, callback_data='UAH')
 		keyboard.add(button_usd, button_rub, button_uah)
 		bot.send_message(message.chat.id, strings.select_curr, reply_markup=keyboard)
+
+
+@bot.message_handler(commands=[strings.set_currency])
+def a(message):
+	_set_currency(message)
 
 
 @bot.callback_query_handler(func=lambda call: True)
@@ -291,8 +334,22 @@ def a(call):
 def a(message):
 	global set_a
 	if message.chat.id == msg_id:
+		if message.text == strings.keyboard_data:
+			_get_mining_data(message)
+		if message.text == strings.keyboard_start_monitor:
+			_start_mining_monitoring(message)
+		if message.text == strings.keyboard_stop_monitor:
+			_stop_mining_monitoring(message)
+		if message.text == strings.keyboard_set_address:
+			_set_address(message)
+		if message.text == strings.keyboard_set_currency:
+			_set_currency(message)
+
 		if set_a:
-			set_address(message.text)
+			if message.text != strings.keyboard_data and message.text != strings.keyboard_start_monitor \
+					and message.text != strings.keyboard_stop_monitor and message.text != strings.keyboard_set_address \
+					and message.text != strings.keyboard_set_currency:
+				set_address(message.text)
 
 
 if __name__ == '__main__':

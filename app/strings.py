@@ -30,3 +30,11 @@ addr_set = 'Введите адрес'
 addr_ok = 'Установлено'
 addr_invalid = 'Невалидный адрес'
 addr_enter_new = 'повторите попытку' + ' /' + set_address
+
+what_do = 'Выберите дальнейшее действие'
+
+keyboard_data = 'Информация'
+keyboard_start_monitor = 'Запустить мониторинг'
+keyboard_stop_monitor = 'Остановить мониторинг'
+keyboard_set_address = 'Изменить адрес'
+keyboard_set_currency = 'Изменить валюту'
