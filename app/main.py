@@ -45,6 +45,7 @@ ch_notify = False
 k = 0
 w = []
 price_currency_int, total_workers, profit_btc_day, profit_fiat_day, balance_btc, balance_fiat = 0, 0, 0, 0, 0, 0
+lang_sel = False
 
 keyboard = types.ReplyKeyboardMarkup(row_width=1, resize_keyboard=True)
 
@@ -210,10 +211,11 @@ def set_keyboard(arg, rw):
 	kb_f_set_a = types.KeyboardButton(text=strings.keyboard_first_set_address)
 	kb_set_a = types.KeyboardButton(text=strings.keyboard_set_address)
 	kb_set_c = types.KeyboardButton(text=strings.keyboard_set_currency)
+	kb_set_l = types.KeyboardButton(text=strings.keyboard_set_language)
 	if arg == 0:
 		keyboard.add(kb_f_set_a, kb_set_c)
 	if arg == 1:
-		keyboard.add(kb_data, kb_start_m, kb_stop_m, kb_set_a, kb_set_c)
+		keyboard.add(kb_start_m, kb_stop_m, kb_data, kb_set_a, kb_set_c, kb_set_l)
 
 
 @bot.message_handler(commands=[common_str.start])
@@ -330,19 +332,27 @@ def _0set_language():
 	bot.send_message(msg_id, common_str.select_lang, reply_markup=keyboard)
 
 
-def _set_language(message):  # В работе
+def _set_language(message):
 	if message.chat.id == msg_id:
+		global lang_sel
+		# исправить ошибку с долгим переключением языка во время мониторинга
+		global monitor
+		monitor = False
 		_0set_language()
-		while lang == '':
+		lt = lang
+		while not lang_sel:
 			pass
-		bot.send_message(msg_id, common_str.restarting)
-		subprocess.call('chmod +x restart.sh', shell=True)
-		subprocess.Popen('./restart.sh', shell=True)
+		lang_sel = False
+		if lt != lang:
+			bot.send_message(msg_id, common_str.restarting)
+			subprocess.call('chmod +x restart.sh', shell=True)
+			subprocess.Popen('./restart.sh', shell=True)
+		else:
+			bot.send_message(msg_id, strings.lang_e)
 
 @bot.message_handler(commands=[common_str.set_language])
 def a(message):
 	_set_language(message)
-
 
 
 def _set_currency(message):
@@ -362,6 +372,7 @@ def a(message):
 
 @bot.callback_query_handler(func=lambda call: True)
 def a(call):
+	global lang_sel
 	if call.message:
 		if call.data == 'USD':
 			bot.edit_message_text(chat_id=call.message.chat.id, message_id=call.message.message_id, text=common_str.USD)
@@ -376,9 +387,11 @@ def a(call):
 		if call.data == 'ru':
 			bot.edit_message_text(chat_id=call.message.chat.id, message_id=call.message.message_id, text=common_str.ru)
 			set_language(call.data)
+			lang_sel = True
 		if call.data == 'en':
 			bot.edit_message_text(chat_id=call.message.chat.id, message_id=call.message.message_id, text=common_str.en)
 			set_language(call.data)
+			lang_sel = True
 
 @bot.message_handler(content_types='text')
 def a(message):
@@ -394,11 +407,16 @@ def a(message):
 			_set_address(message)
 		if message.text == strings.keyboard_set_currency:
 			_set_currency(message)
+		if message.text == strings.keyboard_set_language:
+			_set_language(message)
 
 		if set_a:
 			if message.text != strings.keyboard_data and message.text != strings.keyboard_start_monitor \
-					and message.text != strings.keyboard_stop_monitor and message.text != strings.keyboard_set_address \
-					and message.text != strings.keyboard_first_set_address and message.text != strings.keyboard_set_currency:
+					and message.text != strings.keyboard_stop_monitor\
+					and message.text != strings.keyboard_set_address \
+					and message.text != strings.keyboard_first_set_address\
+					and message.text != strings.keyboard_set_currency\
+					and message.text != strings.keyboard_set_language:
 				set_address(message.text)
 
 

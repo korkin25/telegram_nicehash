@@ -1,31 +1,34 @@
 # -*- coding: utf-8 -*-
 import common_str
 
-monitor_start = 'Monitoring started'
-monitor_stop = 'Monitoring stops...'
-monitor_already_started = 'Monitoring already started'
-monitor_stops = 'Monitoring stops... Try again later'
-monitor_already_stopped = 'Monitoring not started'
+monitor_start = '⚡️ Monitoring started'
+monitor_stop = '✋️ Monitoring stops...'
+monitor_already_started = 'ℹ️ Monitoring already started'
+monitor_stops = '❌ Monitoring stops... Try again later'
+monitor_already_stopped = 'ℹ️ Monitoring not started'
 
-select_curr = 'Select the currency'
+select_curr = '✅ Select the currency'
 
-mining_algo = 'Mining algorithms: '
-workers_active = 'Active workers: '
-profit_per_day = 'Profit per day: '
-unpaid = 'Unpaid balance: '
+lang_e = '❌ This language has already been selected'
 
-forbidden = 'Access is denied'
+mining_algo = '💎 Mining algorithms: '
+workers_active = '⛏ Active workers: '
+profit_per_day = '📈 Profit per day: '
+unpaid = '💰 Unpaid balance: '
 
-addr_set = 'Enter BTC-address'
-addr_ok = 'OK'
-addr_invalid = 'Invalid address'
+forbidden = '❌ Access is denied'
+
+addr_set = '✏️ Enter BTC-address'
+addr_ok = '🆗'
+addr_invalid = '❌ Invalid address'
 addr_enter_new = 'Try again' + ' /' + common_str.set_address
 
-what_do = 'Select an action'
+what_do = '💫 Select an action'
 
-keyboard_data = 'Info'
-keyboard_start_monitor = 'Start monitoring'
-keyboard_stop_monitor = 'Stop monitoring'
-keyboard_first_set_address = 'Set BTC-address'
-keyboard_set_address = 'Change BTC-address'
-keyboard_set_currency = 'Change currency'
+keyboard_data = 'ℹ️ Info'
+keyboard_start_monitor = '▶️ Start monitoring'
+keyboard_stop_monitor = '⏹ Stop monitoring'
+keyboard_first_set_address = '🔧 Set BTC-address'
+keyboard_set_address = '🔁 Change BTC-address'
+keyboard_set_currency = '🔁 Change currency'
+keyboard_set_language = '🔁 Change language'

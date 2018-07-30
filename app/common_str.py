@@ -10,12 +10,12 @@ set_currency = 'set_currency'
 set_language = 'set_language'
 ###
 
-select_lang = 'Choose language'
+select_lang = '💬✅'
 
 restarting = '🔄 Restarting...'
 
-ru = 'Русский'
-en = 'English'
+ru = '🇷🇺 Русский'
+en = '🇬🇧 English'
 
 USD = 'USD'
 RUB = 'RUB'
