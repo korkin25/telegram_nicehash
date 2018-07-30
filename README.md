@@ -14,7 +14,7 @@ pip3 install pytelegrambotapi
 ```
 
 ## Usage
-###First start
+### First start
 Send ```/newbot``` to [@BotFather](https://telegram.me/BotFather) and follow the instructions.
 Write your bot token in ```config_init.py```.
 For example:
@@ -29,7 +29,8 @@ python3 main.py
 Send ```/start``` to your bot and follow the instructions.
 
 ![Alt Text](http://ipic.su/img/img7/fs/doc_2018-07-30_16-46-07.1532945054.gif)
-###After update
+
+### After update
 
 Remove ```Settings.ini``` and restart bot. This action will reset the settings.
 ```
@@ -38,6 +39,6 @@ rm Settings.ini
 ./restart.sh
 ```
 
-###Warnings
+### Warnings
 - Multi-user not supported
 - Does not work from Windows
