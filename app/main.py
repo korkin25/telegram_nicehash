@@ -9,7 +9,7 @@ import threading
 import time
 import urllib.request
 
-import strings
+import common_str
 import telebot
 from telebot import types
 
@@ -24,8 +24,14 @@ config.read(path)
 bot = telebot.TeleBot(config.get('Settings', 'token'))
 msg_id = int(config.get('Settings', 'msg_id'))
 
+lang = config.get('Settings', 'language')
 addr = config.get('Settings', 'address')
 curr = config.get('Settings', 'currency')
+
+if lang == 'ru':
+	import strings_ru as strings
+if lang == 'en':
+	import strings_en as strings
 
 stats = 'https://api.nicehash.com/api?method=stats.provider.ex&addr=' + addr
 price = 'http://api.coindesk.com/v1/bpi/currentprice/' + curr + '.json'
@@ -134,13 +140,23 @@ def set_address(address):
 		if check_address(address):
 			with open(path, "w") as config_file:
 				config.write(config_file)
-			bot.send_message(msg_id, strings.addr_ok)
+			set_keyboard(1, 2)
+			bot.send_message(msg_id, strings.addr_ok, reply_markup=keyboard)
 			set_a = False
 		else:
-			bot.send_message(msg_id, strings.addr_invalid + ', ' + strings.addr_enter_new)
+			bot.send_message(msg_id, strings.addr_invalid + '\n' + strings.addr_enter_new)
 			set_a = False
 			addr = addr_
 			stats = stats_
+
+
+def set_language(language):
+	global lang
+
+	lang = language
+	config.set('Settings', 'language', language)
+	with open(path, "w") as config_file:
+		config.write(config_file)
 
 
 def set_currency(currency):
@@ -191,15 +207,16 @@ def set_keyboard(arg, rw):
 	kb_data = types.KeyboardButton(text=strings.keyboard_data)
 	kb_start_m = types.KeyboardButton(text=strings.keyboard_start_monitor)
 	kb_stop_m = types.KeyboardButton(text=strings.keyboard_stop_monitor)
+	kb_f_set_a = types.KeyboardButton(text=strings.keyboard_first_set_address)
 	kb_set_a = types.KeyboardButton(text=strings.keyboard_set_address)
 	kb_set_c = types.KeyboardButton(text=strings.keyboard_set_currency)
 	if arg == 0:
-		keyboard.add(kb_set_a, kb_set_c)
+		keyboard.add(kb_f_set_a, kb_set_c)
 	if arg == 1:
 		keyboard.add(kb_data, kb_start_m, kb_stop_m, kb_set_a, kb_set_c)
 
 
-@bot.message_handler(commands=[strings.start])
+@bot.message_handler(commands=[common_str.start])
 def a(message):
 	global msg_id
 	# Первый пользователь, отправивший команду start боту становится "владельцем"
@@ -209,14 +226,17 @@ def a(message):
 		config.set("Settings", "msg_id", str(msg_id))
 		with open(path, "w") as config_file:
 			config.write(config_file)
-		bot.send_message(msg_id, strings.owner_set)
-		set_keyboard(0, 1)
-		bot.send_message(message.chat.id, strings.what_do, reply_markup=keyboard)
+		if lang == '':
+			_set_language(message)
 	else:
 		if message.chat.id != msg_id:
 			bot.send_message(message.chat.id, strings.forbidden)
 		if message.chat.id == msg_id:
-			bot.send_message(message.chat.id, strings.owner_already)
+			if addr == '':
+				set_keyboard(0, 1)
+			else:
+				set_keyboard(1, 2)
+			bot.send_message(msg_id, strings.what_do, reply_markup=keyboard)
 
 
 def _get_mining_data(message):
@@ -236,7 +256,7 @@ def _get_mining_data(message):
 			bot.send_message(msg_id, strings.addr_invalid, reply_markup=keyboard)
 
 
-@bot.message_handler(commands=[strings.get_mining_data])
+@bot.message_handler(commands=[common_str.get_mining_data])
 def a(message):
 	_get_mining_data(message)
 
@@ -270,7 +290,7 @@ def _start_mining_monitoring(message):
 			bot.send_message(msg_id, strings.monitor_already_started, reply_markup=keyboard)
 
 
-@bot.message_handler(commands=[strings.start_mining_monitoring])
+@bot.message_handler(commands=[common_str.start_mining_monitoring])
 def a(message):
 	_start_mining_monitoring(message)
 
@@ -285,35 +305,57 @@ def _stop_mining_monitoring(message):
 			bot.send_message(msg_id, strings.monitor_already_stopped)
 
 
-@bot.message_handler(commands=[strings.stop_mining_monitoring])
+@bot.message_handler(commands=[common_str.stop_mining_monitoring])
 def a(message):
 	_stop_mining_monitoring(message)
 
 
 def _set_address(message):
 	if message.chat.id == msg_id:
-		set_keyboard(1, 2)
 		global set_a
 		set_a = True
 		bot.send_message(msg_id, strings.addr_set)
 
 
-@bot.message_handler(commands=[strings.set_address])
+@bot.message_handler(commands=[common_str.set_address])
 def a(message):
 	_set_address(message)
+
+
+def _0set_language():
+	keyboard = types.InlineKeyboardMarkup()
+	button_ru = types.InlineKeyboardButton(text=common_str.ru, callback_data='ru')
+	button_en = types.InlineKeyboardButton(text=common_str.en, callback_data='en')
+	keyboard.add(button_ru, button_en)
+	bot.send_message(msg_id, common_str.select_lang, reply_markup=keyboard)
+
+
+def _set_language(message):  # В работе
+	if message.chat.id == msg_id:
+		_0set_language()
+		while lang == '':
+			pass
+		bot.send_message(msg_id, common_str.restarting)
+		subprocess.call('chmod +x restart.sh', shell=True)
+		subprocess.Popen('./restart.sh', shell=True)
+
+@bot.message_handler(commands=[common_str.set_language])
+def a(message):
+	_set_language(message)
+
 
 
 def _set_currency(message):
 	if message.chat.id == msg_id:
 		keyboard = types.InlineKeyboardMarkup()
-		button_usd = types.InlineKeyboardButton(text=strings.USD, callback_data='USD')
-		button_rub = types.InlineKeyboardButton(text=strings.RUB, callback_data='RUB')
-		button_uah = types.InlineKeyboardButton(text=strings.UAH, callback_data='UAH')
+		button_usd = types.InlineKeyboardButton(text=common_str.USD, callback_data='USD')
+		button_rub = types.InlineKeyboardButton(text=common_str.RUB, callback_data='RUB')
+		button_uah = types.InlineKeyboardButton(text=common_str.UAH, callback_data='UAH')
 		keyboard.add(button_usd, button_rub, button_uah)
-		bot.send_message(message.chat.id, strings.select_curr, reply_markup=keyboard)
+		bot.send_message(msg_id, strings.select_curr, reply_markup=keyboard)
 
 
-@bot.message_handler(commands=[strings.set_currency])
+@bot.message_handler(commands=[common_str.set_currency])
 def a(message):
 	_set_currency(message)
 
@@ -321,14 +363,22 @@ def a(message):
 @bot.callback_query_handler(func=lambda call: True)
 def a(call):
 	if call.message:
-		set_currency(call.data)
 		if call.data == 'USD':
-			bot.edit_message_text(chat_id=call.message.chat.id, message_id=call.message.message_id, text=strings.USD)
+			bot.edit_message_text(chat_id=call.message.chat.id, message_id=call.message.message_id, text=common_str.USD)
+			set_currency(call.data)
 		if call.data == 'RUB':
-			bot.edit_message_text(chat_id=call.message.chat.id, message_id=call.message.message_id, text=strings.RUB)
+			bot.edit_message_text(chat_id=call.message.chat.id, message_id=call.message.message_id, text=common_str.RUB)
+			set_currency(call.data)
 		if call.data == 'UAH':
-			bot.edit_message_text(chat_id=call.message.chat.id, message_id=call.message.message_id, text=strings.UAH)
+			set_currency(call.data)
+			bot.edit_message_text(chat_id=call.message.chat.id, message_id=call.message.message_id, text=common_str.UAH)
 
+		if call.data == 'ru':
+			bot.edit_message_text(chat_id=call.message.chat.id, message_id=call.message.message_id, text=common_str.ru)
+			set_language(call.data)
+		if call.data == 'en':
+			bot.edit_message_text(chat_id=call.message.chat.id, message_id=call.message.message_id, text=common_str.en)
+			set_language(call.data)
 
 @bot.message_handler(content_types='text')
 def a(message):
@@ -340,7 +390,7 @@ def a(message):
 			_start_mining_monitoring(message)
 		if message.text == strings.keyboard_stop_monitor:
 			_stop_mining_monitoring(message)
-		if message.text == strings.keyboard_set_address:
+		if message.text == strings.keyboard_set_address or message.text == strings.keyboard_first_set_address:
 			_set_address(message)
 		if message.text == strings.keyboard_set_currency:
 			_set_currency(message)
@@ -348,7 +398,7 @@ def a(message):
 		if set_a:
 			if message.text != strings.keyboard_data and message.text != strings.keyboard_start_monitor \
 					and message.text != strings.keyboard_stop_monitor and message.text != strings.keyboard_set_address \
-					and message.text != strings.keyboard_set_currency:
+					and message.text != strings.keyboard_first_set_address and message.text != strings.keyboard_set_currency:
 				set_address(message.text)
 
 

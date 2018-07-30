@@ -4,15 +4,16 @@ token = '4564564645:AAEwBrF2DgVtnwzfHNtgdfPQEElFR4ckKc'
 
 
 def create_config(path):
-	config = configparser.ConfigParser()
-	config.add_section('Settings')
-	config.set('Settings', 'token', token)
-	config.set('Settings', 'msg_id', '0')
-	config.set('Settings', 'address', '')
-	config.set('Settings', 'currency', 'USD')
+    config = configparser.ConfigParser()
+    config.add_section('Settings')
+    config.set('Settings', 'token', token)
+    config.set('Settings', 'msg_id', '0')
+    config.set('Settings', 'language', '')
+    config.set('Settings', 'address', '')
+    config.set('Settings', 'currency', 'USD')
 
-	with open(path, 'w') as config_file:
-		config.write(config_file)
+    with open(path, 'w') as config_file:
+        config.write(config_file)
 
 
 path = 'Settings.ini'
