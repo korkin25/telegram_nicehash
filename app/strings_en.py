@@ -17,7 +17,7 @@ unpaid = 'Unpaid balance: '
 forbidden = 'Access is denied'
 
 addr_set = 'Enter BTC-address'
-addr_ok = 'Set'
+addr_ok = 'OK'
 addr_invalid = 'Invalid address'
 addr_enter_new = 'Try again' + ' /' + common_str.set_address
 

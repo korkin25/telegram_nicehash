@@ -402,6 +402,13 @@ def a(message):
 				set_address(message.text)
 
 
+if lang != '' and msg_id != 0:
+	if addr == '':
+		set_keyboard(0, 1)
+	else:
+		set_keyboard(1, 2)
+	bot.send_message(msg_id, strings.what_do, reply_markup=keyboard)
+
 if __name__ == '__main__':
 	try:
 		bot.polling(none_stop=True)

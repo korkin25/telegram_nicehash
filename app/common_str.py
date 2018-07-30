@@ -12,7 +12,7 @@ set_language = 'set_language'
 
 select_lang = 'Choose language'
 
-restarting = '🔄.../start'
+restarting = '🔄 Restarting...'
 
 ru = 'Русский'
 en = 'English'
