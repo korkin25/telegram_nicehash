@@ -20,3 +20,7 @@ en = '🇬🇧 English'
 USD = 'USD'
 RUB = 'RUB'
 UAH = 'UAH'
+
+token_help = 'Restart the script and enter a valid token with -t or --token key for first time\n' \
+             'for example:\n' \
+             'python3 main.py -t 1233424243:GfvdhvT2DgVtnwzefgugGUgjjElFR4Ukbu\n\n\n'

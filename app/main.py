@@ -8,10 +8,15 @@ import subprocess
 import threading
 import time
 import urllib.request
+import argparse
 
 import common_str
 import telebot
 from telebot import types
+
+parser = argparse.ArgumentParser()
+parser.add_argument('-t', '--token', action='store', dest='t', help='token')
+rr = parser.parse_args()
 
 path = "Settings.ini"
 
@@ -21,7 +26,17 @@ if not os.path.exists(path):
 config = configparser.ConfigParser()
 config.read(path)
 
-bot = telebot.TeleBot(config.get('Settings', 'token'))
+if rr.t is not None:
+	bot = telebot.TeleBot(rr.t)
+	config.set('Settings', 'token', rr.t)
+	with open(path, "w") as config_file:
+		config.write(config_file)
+else:
+	if config.get('Settings', 'token') != '':
+		bot = telebot.TeleBot(config.get('Settings', 'token'))
+	else:
+		print(common_str.token_help)
+
 msg_id = int(config.get('Settings', 'msg_id'))
 
 lang = config.get('Settings', 'language')
