@@ -16,7 +16,7 @@ pip3 install pytelegrambotapi
 ## Usage
 ### First start
 Send ```/newbot``` to [@BotFather](https://telegram.me/BotFather) and follow the instructions.
-Launch ```main.py```
+Launch ```main.py```.
 ```
 cd /path_to_bot/app
 python3 main.py -t your_token_from_BotFather
@@ -31,10 +31,10 @@ python3 main.py
 
 ### After update
 
-Remove ```Settings.ini``` and restart bot. This action will reset the settings (with token).
+Remove ```settings.ini``` and restart bot. This action will reset the settings (with token).
 ```
 cd /path_to_bot/app
-rm Settings.ini
+rm settings.ini
 python3 main.py -t your_token_from_BotFather
 ```
 

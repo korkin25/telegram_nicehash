@@ -18,7 +18,7 @@ parser = argparse.ArgumentParser()
 parser.add_argument('-t', '--token', action='store', dest='t', help='token')
 rr = parser.parse_args()
 
-path = "Settings.ini"
+path = "settings.ini"
 
 if not os.path.exists(path):
 	subprocess.call("python3 config_init.py", shell=True)
@@ -26,22 +26,27 @@ if not os.path.exists(path):
 config = configparser.ConfigParser()
 config.read(path)
 
-if rr.t is not None:
-	bot = telebot.TeleBot(rr.t)
-	config.set('Settings', 'token', rr.t)
+def save_config():
+	global config_file
 	with open(path, "w") as config_file:
 		config.write(config_file)
+
+if rr.t is not None:
+	bot = telebot.TeleBot(rr.t)
+	config.set('settings', 'token', rr.t)
+	save_config()
 else:
-	if config.get('Settings', 'token') != '':
-		bot = telebot.TeleBot(config.get('Settings', 'token'))
+	if config.get('settings', 'token') != '':
+		bot = telebot.TeleBot(config.get('settings', 'token'))
 	else:
 		print(common_str.token_help)
 
-msg_id = int(config.get('Settings', 'msg_id'))
+msg_id = int(config.get('settings', 'msg_id'))
 
-lang = config.get('Settings', 'language')
-addr = config.get('Settings', 'address')
-curr = config.get('Settings', 'currency')
+lang = config.get('settings', 'language')
+addr = config.get('settings', 'address')
+curr = config.get('settings', 'currency')
+interval = int(config.get('settings', 'interval_s'))
 
 if lang == 'ru':
 	import strings_ru as strings
@@ -143,19 +148,16 @@ def set_address(address):
 	global addr
 	global stats
 	global set_a
-	addr_ = ''
-	stats_ = ''
 	if address == addr:
 		return False
 	else:
-		config.set('Settings', 'address', address)
+		config.set('settings', 'address', address)
 		addr_ = addr
 		stats_ = stats
 		addr = address
 		stats = 'https://api.nicehash.com/api?method=stats.provider.ex&addr=' + addr
 		if check_address(address):
-			with open(path, "w") as config_file:
-				config.write(config_file)
+			save_config()
 			set_keyboard(1, 2)
 			bot.send_message(msg_id, strings.addr_ok, reply_markup=keyboard)
 			set_a = False
@@ -170,9 +172,8 @@ def set_language(language):
 	global lang
 
 	lang = language
-	config.set('Settings', 'language', language)
-	with open(path, "w") as config_file:
-		config.write(config_file)
+	config.set('settings', 'language', language)
+	save_config()
 
 
 def set_currency(currency):
@@ -181,9 +182,8 @@ def set_currency(currency):
 
 	curr = currency
 	price = 'http://api.coindesk.com/v1/bpi/currentprice/' + curr + '.json'
-	config.set('Settings', 'currency', curr)
-	with open(path, "w") as config_file:
-		config.write(config_file)
+	config.set('settings', 'currency', curr)
+	save_config()
 
 
 def check_address(address):
@@ -238,11 +238,10 @@ def a(message):
 	global msg_id
 	# Первый пользователь, отправивший команду start боту становится "владельцем"
 	# Запросы от других пользователей будут игнорироваться
-	if int(config.get("Settings", "msg_id")) == 0:
+	if int(config.get("settings", "msg_id")) == 0:
 		msg_id = message.chat.id
-		config.set("Settings", "msg_id", str(msg_id))
-		with open(path, "w") as config_file:
-			config.write(config_file)
+		config.set("settings", "msg_id", str(msg_id))
+		save_config()
 		if lang == '':
 			_set_language(message)
 	else:
@@ -288,6 +287,8 @@ def _start_mining_monitoring(message):
 				monitor = True
 				bot.send_message(msg_id, strings.monitor_start)
 				if check_address(addr):
+					config.set('settings', 'monitor', '1')
+					save_config()
 					global k
 					try:
 						while monitor:
@@ -296,11 +297,13 @@ def _start_mining_monitoring(message):
 							k += 1
 							if k == 2:
 								k = 0
-							time.sleep(30)
+							time.sleep(interval)
 							loop_term = True
 					except:
 						set_keyboard(0, 1)
 						bot.send_message(msg_id, strings.addr_invalid)
+						monitor = False
+						loop_term = True
 			else:
 				bot.send_message(msg_id, strings.monitor_stops, reply_markup=keyboard)
 		else:
@@ -318,6 +321,8 @@ def _stop_mining_monitoring(message):
 		if monitor:
 			monitor = False
 			bot.send_message(msg_id, strings.monitor_stop)
+			config.set('settings', 'monitor', '0')
+			save_config()
 		else:
 			bot.send_message(msg_id, strings.monitor_already_stopped)
 
@@ -350,7 +355,6 @@ def _0set_language():
 def _set_language(message):
 	if message.chat.id == msg_id:
 		global lang_sel
-		# исправить ошибку с долгим переключением языка во время мониторинга
 		global monitor
 		monitor = False
 		_0set_language()
@@ -364,6 +368,9 @@ def _set_language(message):
 			subprocess.Popen('./restart.sh', shell=True)
 		else:
 			bot.send_message(msg_id, strings.lang_e)
+			bot.send_message(msg_id, strings.monitor_restart)
+			config.set('settings', 'monitor', '0')
+			save_config()
 
 @bot.message_handler(commands=[common_str.set_language])
 def a(message):
@@ -438,9 +445,16 @@ def a(message):
 if lang != '' and msg_id != 0:
 	if addr == '':
 		set_keyboard(0, 1)
+		bot.send_message(msg_id, strings.what_do, reply_markup=keyboard)
 	else:
 		set_keyboard(1, 2)
-	bot.send_message(msg_id, strings.what_do, reply_markup=keyboard)
+		if config.get('settings', 'monitor') == '1':
+			bot.send_message(msg_id, strings.monitor_restart, reply_markup=keyboard)
+			config.set('settings', 'monitor', '0')
+			save_config()
+		else:
+			bot.send_message(msg_id, strings.what_do, reply_markup=keyboard)
+
 
 if __name__ == '__main__':
 	try:

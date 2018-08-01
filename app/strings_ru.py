@@ -6,6 +6,9 @@ monitor_stop = '✋️ Мониторинг останавливается'
 monitor_already_started = 'ℹ️ Мониторинг уже был запущен'
 monitor_stops = '❌ Мониторинг ещё останавливается, повторите попытку немного позднее'
 monitor_already_stopped = 'ℹ️ Мониторинг не запущен'
+monitor_restart = '⚠️ Мониторинг был сброшен.' \
+                  '\nНажмите для запуска -> /'\
+                  + common_str.start_mining_monitoring
 
 select_curr = '✅ Выберите валюту для отображения'
 

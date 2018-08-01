@@ -6,6 +6,9 @@ monitor_stop = '✋️ Monitoring stops...'
 monitor_already_started = 'ℹ️ Monitoring already started'
 monitor_stops = '❌ Monitoring stops... Try again later'
 monitor_already_stopped = 'ℹ️ Monitoring not started'
+monitor_restart = '⚠️ Monitoring was stopped.' \
+                  '\nClick here to restart -> /'\
+                  + common_str.start_mining_monitoring
 
 select_curr = '✅ Select the currency'
 
