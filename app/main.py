@@ -58,6 +58,8 @@ price = 'http://api.coindesk.com/v1/bpi/currentprice/' + curr + '.json'
 
 monitor = False
 loop_term = True
+lang_lock = False
+m_fail = False
 set_a = False
 workers0 = 0
 workers1 = 0
@@ -356,21 +358,29 @@ def _set_language(message):
 	if message.chat.id == msg_id:
 		global lang_sel
 		global monitor
-		monitor = False
-		_0set_language()
-		lt = lang
-		while not lang_sel:
-			pass
-		lang_sel = False
-		if lt != lang:
-			bot.send_message(msg_id, common_str.restarting)
-			subprocess.call('chmod +x restart.sh', shell=True)
-			subprocess.Popen('./restart.sh', shell=True)
-		else:
-			bot.send_message(msg_id, strings.lang_e)
-			bot.send_message(msg_id, strings.monitor_restart)
-			config.set('settings', 'monitor', '0')
-			save_config()
+		global lang_lock
+		global m_fail
+		if not lang_lock:
+			lang_lock = True
+			monitor = False
+			_0set_language()
+			lt = lang
+			while not lang_sel:
+				if monitor:
+					m_fail = True
+					break
+			lang_sel = False
+			lang_lock = False
+			if lt != lang:
+				bot.send_message(msg_id, common_str.restarting)
+				subprocess.call('chmod +x restart.sh', shell=True)
+				subprocess.Popen('./restart.sh', shell=True)
+			else:
+				if not m_fail:
+					bot.send_message(msg_id, strings.lang_e)
+					bot.send_message(msg_id, strings.monitor_restart)
+					config.set('settings', 'monitor', '0')
+					save_config()
 
 @bot.message_handler(commands=[common_str.set_language])
 def a(message):
@@ -395,6 +405,7 @@ def a(message):
 @bot.callback_query_handler(func=lambda call: True)
 def a(call):
 	global lang_sel
+	global m_fail
 	if call.message:
 		if call.data == 'USD':
 			bot.edit_message_text(chat_id=call.message.chat.id, message_id=call.message.message_id, text=common_str.USD)
@@ -407,13 +418,23 @@ def a(call):
 			bot.edit_message_text(chat_id=call.message.chat.id, message_id=call.message.message_id, text=common_str.UAH)
 
 		if call.data == 'ru':
-			bot.edit_message_text(chat_id=call.message.chat.id, message_id=call.message.message_id, text=common_str.ru)
-			set_language(call.data)
-			lang_sel = True
+			if m_fail:
+				bot.delete_message(chat_id=call.message.chat.id, message_id=call.message.message_id)
+				m_fail = False
+			else:
+				bot.edit_message_text(chat_id=call.message.chat.id, message_id=call.message.message_id,
+									  text=common_str.ru)
+				lang_sel = True
+				set_language(call.data)
 		if call.data == 'en':
-			bot.edit_message_text(chat_id=call.message.chat.id, message_id=call.message.message_id, text=common_str.en)
-			set_language(call.data)
-			lang_sel = True
+			if m_fail:
+				bot.delete_message(chat_id=call.message.chat.id, message_id=call.message.message_id)
+				m_fail = False
+			else:
+				bot.edit_message_text(chat_id=call.message.chat.id, message_id=call.message.message_id,
+									  text=common_str.en)
+				lang_sel = True
+				set_language(call.data)
 
 @bot.message_handler(content_types='text')
 def a(message):
