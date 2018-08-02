@@ -10,6 +10,7 @@ def create_config(path):
     config.set('settings', 'currency', 'USD')
     config.set('settings', 'interval_s', '10')
     config.set('settings', 'monitor', '0')
+    config.set('settings', 'workers_n', '1')
 
     with open(path, 'w') as config_file:
         config.write(config_file)

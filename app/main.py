@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+import argparse
 import configparser
 import json
 import locale
@@ -8,7 +9,6 @@ import subprocess
 import threading
 import time
 import urllib.request
-import argparse
 
 import common_str
 import telebot
@@ -71,6 +71,10 @@ lang_sel = False
 
 keyboard = types.ReplyKeyboardMarkup(row_width=1, resize_keyboard=True)
 
+if config.get('settings', 'workers_n') == '1':
+	worker_notification = True
+else:
+	worker_notification = False
 
 def start():
 	global price_currency_int
@@ -213,7 +217,7 @@ def check(kk):
 		if ch_notify > 2:
 			ch_notify = 2  # Чтобы лишний раз не расходовать память
 		if ch_notify >= 2:
-			if workers0 != workers1:
+			if workers0 != workers1 and worker_notification:
 				bot.send_message(msg_id, strings.workers_active + str(total_workers))
 	else:
 		int(data_[2])
@@ -229,10 +233,11 @@ def set_keyboard(arg, rw):
 	kb_set_a = types.KeyboardButton(text=strings.keyboard_set_address)
 	kb_set_c = types.KeyboardButton(text=strings.keyboard_set_currency)
 	kb_set_l = types.KeyboardButton(text=strings.keyboard_set_language)
+	kb_set_m_n = types.KeyboardButton(text=strings.keyboard_set_monitor_n)
 	if arg == 0:
 		keyboard.add(kb_f_set_a, kb_set_c)
 	if arg == 1:
-		keyboard.add(kb_start_m, kb_stop_m, kb_data, kb_set_a, kb_set_c, kb_set_l)
+		keyboard.add(kb_start_m, kb_stop_m, kb_set_m_n, kb_set_a, kb_set_c, kb_set_l, kb_data)
 
 
 @bot.message_handler(commands=[common_str.start])
@@ -253,13 +258,13 @@ def a(message):
 			if addr == '':
 				set_keyboard(0, 1)
 			else:
-				set_keyboard(1, 2)
+				set_keyboard(1, 3)
 			bot.send_message(msg_id, strings.what_do, reply_markup=keyboard)
 
 
 def _get_mining_data(message):
 	if message.chat.id == msg_id:
-		set_keyboard(1, 2)
+		set_keyboard(1, 3)
 		try:
 			check(3)
 			str_send = '1 BTC = ' + str(price_currency_int) + ' ' + curr + '\n\n' + strings.mining_algo + str(
@@ -281,7 +286,7 @@ def a(message):
 
 def _start_mining_monitoring(message):
 	if message.chat.id == msg_id:
-		set_keyboard(1, 2)
+		set_keyboard(1, 3)
 		global monitor
 		global loop_term
 		if not monitor:
@@ -402,10 +407,34 @@ def a(message):
 	_set_currency(message)
 
 
+def _set_notifications(message):
+	if message.chat.id == msg_id:
+		keyboard = types.InlineKeyboardMarkup()
+		workers_n_ = config.get('settings', 'workers_n')
+
+		if workers_n_ == '1':
+			workers_n_callback = 'wo_0'
+			button_label = strings.notification_false
+		else:
+			workers_n_callback = 'wo_1'
+			button_label = strings.notification_true
+
+			button_label += strings.set_notification_workers
+		button_workers_n = types.InlineKeyboardButton(text=button_label, callback_data=workers_n_callback)
+		keyboard.add(button_workers_n)
+		bot.send_message(msg_id, strings.notification_set_menu_msg, reply_markup=keyboard)
+
+
+@bot.message_handler(commands=[common_str.set_notifications])
+def a(message):
+	_set_notifications(message)
+
+
 @bot.callback_query_handler(func=lambda call: True)
 def a(call):
 	global lang_sel
 	global m_fail
+	global worker_notification
 	if call.message:
 		if call.data == 'USD':
 			bot.edit_message_text(chat_id=call.message.chat.id, message_id=call.message.message_id, text=common_str.USD)
@@ -436,6 +465,20 @@ def a(call):
 				lang_sel = True
 				set_language(call.data)
 
+		if call.data == 'wo_0':
+			config.set('settings', 'workers_n', '0')
+			save_config()
+			worker_notification = False
+			bot.edit_message_text(chat_id=call.message.chat.id, message_id=call.message.message_id,
+								  text=strings.notification_workers_disabled)
+		if call.data == 'wo_1':
+			config.set('settings', 'workers_n', '1')
+			save_config()
+			worker_notification = True
+			bot.edit_message_text(chat_id=call.message.chat.id, message_id=call.message.message_id,
+								  text=strings.notification_workers_enabled)
+
+
 @bot.message_handler(content_types='text')
 def a(message):
 	global set_a
@@ -452,6 +495,8 @@ def a(message):
 			_set_currency(message)
 		if message.text == strings.keyboard_set_language:
 			_set_language(message)
+		if message.text == strings.keyboard_set_monitor_n:
+			_set_notifications(message)
 
 		if set_a:
 			if message.text != strings.keyboard_data and message.text != strings.keyboard_start_monitor \
@@ -459,7 +504,8 @@ def a(message):
 					and message.text != strings.keyboard_set_address \
 					and message.text != strings.keyboard_first_set_address\
 					and message.text != strings.keyboard_set_currency\
-					and message.text != strings.keyboard_set_language:
+					and message.text != strings.keyboard_set_language\
+					and message.text != strings.keyboard_set_monitor_n:
 				set_address(message.text)
 
 
@@ -468,7 +514,7 @@ if lang != '' and msg_id != 0:
 		set_keyboard(0, 1)
 		bot.send_message(msg_id, strings.what_do, reply_markup=keyboard)
 	else:
-		set_keyboard(1, 2)
+		set_keyboard(1, 3)
 		if config.get('settings', 'monitor') == '1':
 			bot.send_message(msg_id, strings.monitor_restart, reply_markup=keyboard)
 			config.set('settings', 'monitor', '0')

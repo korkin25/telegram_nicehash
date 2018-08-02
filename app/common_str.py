@@ -8,6 +8,7 @@ stop_mining_monitoring = 'stop_monitor'
 set_address = 'set_address'
 set_currency = 'set_currency'
 set_language = 'set_language'
+set_notifications = 'set_notifications'
 ###
 
 select_lang = '💬✅'

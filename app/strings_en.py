@@ -35,3 +35,14 @@ keyboard_first_set_address = '🔧 Set BTC-address'
 keyboard_set_address = '🔁 Change BTC-address'
 keyboard_set_currency = '🔁 Change currency'
 keyboard_set_language = '🔁 Change language'
+keyboard_set_monitor_n = '🔔 Monitor notifications'
+
+notification_set_menu_msg = '🔔⚙'
+notification_true = '🔔 '
+notification_false = '🔕 '
+
+set_notification_workers = 'Workers'
+# добавить ещё
+
+notification_workers_disabled = '🔕 Notifications about workers are disabled'
+notification_workers_enabled = '🔔 Notifications about workers are enabled'

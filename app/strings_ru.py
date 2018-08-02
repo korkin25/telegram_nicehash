@@ -35,3 +35,14 @@ keyboard_first_set_address = '🔧 Ввести адрес'
 keyboard_set_address = '🔁 Изменить адрес'
 keyboard_set_currency = '🔁 Изменить валюту'
 keyboard_set_language = '🔁 Изменить язык'
+keyboard_set_monitor_n = '🔔 Уведомления мониторинга'
+
+notification_set_menu_msg = '🔔⚙'
+notification_true = '🔔 '
+notification_false = '🔕 '
+
+set_notification_workers = 'Воркеры'
+# добавить ещё
+
+notification_workers_disabled = '🔕 Оповещения об изменении числа воркеров отключены'
+notification_workers_enabled = '🔔 Оповещения об изменении числа воркеров включены'
