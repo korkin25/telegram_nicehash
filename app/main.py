@@ -157,12 +157,12 @@ def set_address(address):
 	if address == addr:
 		return False
 	else:
-		config.set('settings', 'address', address)
 		addr_ = addr
 		stats_ = stats
 		addr = address
 		stats = 'https://api.nicehash.com/api?method=stats.provider.ex&addr=' + addr
 		if check_address(address):
+			config.set('settings', 'address', address)
 			save_config()
 			set_keyboard(1, 2)
 			bot.send_message(msg_id, strings.addr_ok, reply_markup=keyboard)
@@ -343,7 +343,10 @@ def _set_address(message):
 	if message.chat.id == msg_id:
 		global set_a
 		set_a = True
-		bot.send_message(msg_id, strings.addr_set)
+		keyboard = types.InlineKeyboardMarkup()
+		button_cancel_sa = types.InlineKeyboardButton(text=strings.cancel, callback_data='cancel_sa')
+		keyboard.add(button_cancel_sa)
+		bot.send_message(msg_id, strings.addr_set, reply_markup=keyboard)
 
 
 @bot.message_handler(commands=[common_str.set_address])
@@ -367,6 +370,7 @@ def _set_language(message):
 		global m_fail
 		if not lang_lock:
 			lang_lock = True
+			ms_b = monitor
 			monitor = False
 			_0set_language()
 			lt = lang
@@ -383,9 +387,10 @@ def _set_language(message):
 			else:
 				if not m_fail:
 					bot.send_message(msg_id, strings.lang_e)
-					bot.send_message(msg_id, strings.monitor_restart)
-					config.set('settings', 'monitor', '0')
-					save_config()
+					if ms_b:
+						bot.send_message(msg_id, strings.monitor_restart)
+						config.set('settings', 'monitor', '0')
+						save_config()
 
 @bot.message_handler(commands=[common_str.set_language])
 def a(message):
@@ -398,7 +403,8 @@ def _set_currency(message):
 		button_usd = types.InlineKeyboardButton(text=common_str.USD, callback_data='USD')
 		button_rub = types.InlineKeyboardButton(text=common_str.RUB, callback_data='RUB')
 		button_uah = types.InlineKeyboardButton(text=common_str.UAH, callback_data='UAH')
-		keyboard.add(button_usd, button_rub, button_uah)
+		button_cancel_c = types.InlineKeyboardButton(text=strings.cancel, callback_data='cancel')
+		keyboard.add(button_usd, button_rub, button_uah, button_cancel_c)
 		bot.send_message(msg_id, strings.select_curr, reply_markup=keyboard)
 
 
@@ -419,9 +425,10 @@ def _set_notifications(message):
 			workers_n_callback = 'wo_1'
 			button_label = strings.notification_true
 
-			button_label += strings.set_notification_workers
+		button_label += strings.set_notification_workers
 		button_workers_n = types.InlineKeyboardButton(text=button_label, callback_data=workers_n_callback)
-		keyboard.add(button_workers_n)
+		button_cancel_n = types.InlineKeyboardButton(text=strings.cancel, callback_data='cancel')
+		keyboard.add(button_workers_n, button_cancel_n)
 		bot.send_message(msg_id, strings.notification_set_menu_msg, reply_markup=keyboard)
 
 
@@ -436,6 +443,14 @@ def a(call):
 	global m_fail
 	global worker_notification
 	if call.message:
+		if call.data == 'cancel':
+			bot.edit_message_text(chat_id=call.message.chat.id, message_id=call.message.message_id, text=strings.cancelled)
+
+		if call.data == 'cancel_sa':
+			bot.edit_message_text(chat_id=call.message.chat.id, message_id=call.message.message_id, text=strings.cancelled)
+			global set_a
+			set_a = False
+
 		if call.data == 'USD':
 			bot.edit_message_text(chat_id=call.message.chat.id, message_id=call.message.message_id, text=common_str.USD)
 			set_currency(call.data)
@@ -499,7 +514,8 @@ def a(message):
 			_set_notifications(message)
 
 		if set_a:
-			if message.text != strings.keyboard_data and message.text != strings.keyboard_start_monitor \
+			if message.text != strings.keyboard_data\
+					and message.text != strings.keyboard_start_monitor \
 					and message.text != strings.keyboard_stop_monitor\
 					and message.text != strings.keyboard_set_address \
 					and message.text != strings.keyboard_first_set_address\

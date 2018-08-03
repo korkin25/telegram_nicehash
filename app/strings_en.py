@@ -10,6 +10,9 @@ monitor_restart = '⚠️ Monitoring was stopped.' \
                   '\nClick here to restart -> /'\
                   + common_str.start_mining_monitoring
 
+cancel = '❌ Close'
+cancelled = '❌ Cancelled'
+
 select_curr = '✅ Select the currency'
 
 lang_e = '❌ This language has already been selected'

@@ -10,6 +10,9 @@ monitor_restart = '⚠️ Мониторинг был сброшен.' \
                   '\nНажмите для запуска -> /'\
                   + common_str.start_mining_monitoring
 
+cancel = '❌ Закрыть'
+cancelled = '❌ Отменено'
+
 select_curr = '✅ Выберите валюту для отображения'
 
 lang_e = '❌ Этот язык уже выбран'
