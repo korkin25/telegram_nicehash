@@ -11,7 +11,7 @@ monitor_restart = '⚠️ Monitoring was stopped.' \
                   + common_str.start_mining_monitoring
 
 cancel = '❌ Close'
-cancelled = '❌ Cancelled'
+cancelled = '❌ Closed'
 
 select_curr = '✅ Select the currency'
 
@@ -45,7 +45,16 @@ notification_true = '🔔 '
 notification_false = '🔕 '
 
 set_notification_workers = 'Workers'
-# добавить ещё
+set_notification_profit_min = 'min profit'
+set_notification_profit_max = 'max profit'
+
+notification_profit_help = 'Minimum profit threshold\nSpecify in the selected currency\nType 0 to disable'
+notification_profit_error = 'You only need to enter an integer or fractional number'
+notification_profit_ok = 'OK'
+notification_profit_min_alert = 'Profit fell below the threshold'
+notification_profit_min_no = 'The profit has returned for a threshold of a minimum'
 
 notification_workers_disabled = '🔕 Notifications about workers are disabled'
 notification_workers_enabled = '🔔 Notifications about workers are enabled'
+notification_profit_min_disabled = '🔕 The notification of the minimum profit threshold is off'
+notification_profit_max_disabled = '🔕 The notification of the maximum profit threshold is off'

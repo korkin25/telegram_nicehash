@@ -1,12 +1,12 @@
 # Telegram bot for monitoring mining (NiceHash)
-The project uses the NiceHash Viewer API snippets
-https://github.com/adityudhna/nicehash
+The project uses the [NiceHash Viewer API](https://github.com/adityudhna/nicehash)
 
 ## Features
 - Shows the mining profitability, mining algorithms, unpaid balance
 - Notification when changing the number of workers
 
-## Installing dependencies (Debian/Ubuntu)
+## Installing dependencies 
+### Ubuntu (with Python 3.6.x)
 ```
 apt-get update
 apt-get install -y python3 python3-pip
