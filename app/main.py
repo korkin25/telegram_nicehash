@@ -64,6 +64,7 @@ lang_lock = False
 m_fail = False
 set_a = False
 set_pr_min = False
+btn_min_t_dis = False
 p_m_notification = False
 workers0 = 0
 workers1 = 0
@@ -225,10 +226,10 @@ def check(kk):
 			if workers0 != workers1 and worker_notification:
 				bot.send_message(msg_id, strings.workers_active + str(total_workers))
 		if data_[4] < min_profit_n != 0.0 and not p_m_notification:
-			bot.send_message(msg_id, strings.notification_profit_min_alert + '\n' + strings.profit_per_day + str(data_[4]))
+			bot.send_message(msg_id, strings.notification_profit_min_alert + '\n' + strings.profit_per_day + str(data_[4]) + curr)
 			p_m_notification = True
 		if data_[4] > min_profit_n != 0.0 and p_m_notification:
-			bot.send_message(msg_id, strings.notification_profit_min_no + '\n' + strings.profit_per_day + str(data_[4]))
+			bot.send_message(msg_id, strings.notification_profit_min_no + '\n' + strings.profit_per_day + str(data_[4]) + curr)
 			p_m_notification = False
 	else:
 		int(data_[2])
@@ -442,6 +443,7 @@ def a(message):
 
 def _set_notifications(message):
 	if message.chat.id == msg_id:
+		global btn_min_t_dis
 		keyboard = types.InlineKeyboardMarkup()
 		workers_n_ = config.get('settings', 'workers_n')
 
@@ -452,7 +454,12 @@ def _set_notifications(message):
 			workers_n_callback = 'wo_1'
 			btn_workers_n_label = strings.notification_true
 
-		btn_min_p_n_label = strings.notification_true
+		if float(config.get('settings', 'min_profit_n')) == 0.0:
+			btn_min_p_n_label = strings.notification_true
+			btn_min_t_dis = False
+		else:
+			btn_min_p_n_label = strings.notification_false + strings.notification_true
+			btn_min_t_dis = True
 		min_p_callback = 'pr_min'
 		
 		btn_workers_n_label += strings.set_notification_workers
@@ -483,6 +490,11 @@ def a(call):
 			bot.edit_message_text(chat_id=call.message.chat.id, message_id=call.message.message_id, text=strings.cancelled)
 			global set_a
 			set_a = False
+		if call.data == 'cancel_pr_min':
+			bot.edit_message_text(chat_id=call.message.chat.id, message_id=call.message.message_id,
+								  text=strings.cancelled)
+			global set_pr_min
+			set_pr_min = False
 
 		if call.data == 'USD':
 			bot.edit_message_text(chat_id=call.message.chat.id, message_id=call.message.message_id, text=common_str.USD)
@@ -528,8 +540,18 @@ def a(call):
 
 		if call.data == 'pr_min':
 			set_pr_min = True
+			keyboard = types.InlineKeyboardMarkup()
+			button_disable_m_p = types.InlineKeyboardButton(text=strings.disable_t, callback_data='disable_min')
+			button_cancel_min_t = types.InlineKeyboardButton(text=strings.cancel, callback_data='cancel_pr_min')
+			if btn_min_t_dis:
+				keyboard.add(button_disable_m_p, button_cancel_min_t)
+			else:
+				keyboard.add(button_cancel_min_t)
 			bot.edit_message_text(chat_id=call.message.chat.id, message_id=call.message.message_id,
-								  text=strings.notification_profit_help)
+								  text=strings.notification_profit_min_help + ' ' + curr, reply_markup=keyboard)
+		if call.data == 'disable_min':
+			set_pr_min_('0')
+			bot.delete_message(chat_id=call.message.chat.id, message_id=call.message.message_id)
 
 
 @bot.message_handler(content_types='text')

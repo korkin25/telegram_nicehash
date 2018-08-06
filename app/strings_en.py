@@ -12,6 +12,8 @@ monitor_restart = '⚠️ Monitoring was stopped.' \
 
 cancel = '❌ Close'
 cancelled = '❌ Closed'
+disable_t = '❌ Disable threshold'
+
 
 select_curr = '✅ Select the currency'
 
@@ -19,7 +21,7 @@ lang_e = '❌ This language has already been selected'
 
 mining_algo = '💎 Mining algorithms: '
 workers_active = '⛏ Active workers: '
-profit_per_day = '📈 Profit per day: '
+profit_per_day = '💸 Profit per day: '
 unpaid = '💰 Unpaid balance: '
 
 forbidden = '❌ Access is denied'
@@ -45,14 +47,14 @@ notification_true = '🔔 '
 notification_false = '🔕 '
 
 set_notification_workers = 'Workers'
-set_notification_profit_min = 'min profit'
-set_notification_profit_max = 'max profit'
+set_notification_profit_min = 'Min profit'
+set_notification_profit_max = 'Max profit'
 
-notification_profit_help = 'Minimum profit threshold\nSpecify in the selected currency\nType 0 to disable'
-notification_profit_error = 'You only need to enter an integer or fractional number'
-notification_profit_ok = 'OK'
-notification_profit_min_alert = 'Profit fell below the threshold'
-notification_profit_min_no = 'The profit has returned for a threshold of a minimum'
+notification_profit_min_help = '📉 Minimum profit threshold\nSpecify in the selected currency\nType 0 to disable'
+notification_profit_error = '⚠️ You only need to enter an integer or fractional number'
+notification_profit_ok = '🆗'
+notification_profit_min_alert = '📉 Profit fell below the threshold'
+notification_profit_min_no = '📈 The profit has returned for a threshold of a minimum'
 
 notification_workers_disabled = '🔕 Notifications about workers are disabled'
 notification_workers_enabled = '🔔 Notifications about workers are enabled'
