@@ -20,7 +20,6 @@ en = '🇬🇧 English'
 
 USD = 'USD'
 RUB = 'RUB'
-UAH = 'UAH'
 
 token_help = 'Restart the script and enter a valid token with -t or --token key for first time\n' \
              'for example:\n' \

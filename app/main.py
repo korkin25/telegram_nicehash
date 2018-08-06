@@ -12,6 +12,7 @@ import urllib.request
 
 import common_str
 import telebot
+from currency_converter import CurrencyConverter
 from telebot import types
 
 parser = argparse.ArgumentParser()
@@ -226,10 +227,10 @@ def check(kk):
 			if workers0 != workers1 and worker_notification:
 				bot.send_message(msg_id, strings.workers_active + str(total_workers))
 		if data_[4] < min_profit_n != 0.0 and not p_m_notification:
-			bot.send_message(msg_id, strings.notification_profit_min_alert + '\n' + strings.profit_per_day + str(data_[4]) + curr)
+			bot.send_message(msg_id, strings.notification_profit_min_alert + '\n' + strings.profit_per_day + str(data_[4]) + ' ' + curr)
 			p_m_notification = True
 		if data_[4] > min_profit_n != 0.0 and p_m_notification:
-			bot.send_message(msg_id, strings.notification_profit_min_no + '\n' + strings.profit_per_day + str(data_[4]) + curr)
+			bot.send_message(msg_id, strings.notification_profit_min_no + '\n' + strings.profit_per_day + str(data_[4]) + ' ' + curr)
 			p_m_notification = False
 	else:
 		int(data_[2])
@@ -430,9 +431,8 @@ def _set_currency(message):
 		keyboard = types.InlineKeyboardMarkup()
 		button_usd = types.InlineKeyboardButton(text=common_str.USD, callback_data='USD')
 		button_rub = types.InlineKeyboardButton(text=common_str.RUB, callback_data='RUB')
-		button_uah = types.InlineKeyboardButton(text=common_str.UAH, callback_data='UAH')
 		button_cancel_c = types.InlineKeyboardButton(text=strings.cancel, callback_data='cancel')
-		keyboard.add(button_usd, button_rub, button_uah, button_cancel_c)
+		keyboard.add(button_usd, button_rub, button_cancel_c)
 		bot.send_message(msg_id, strings.select_curr, reply_markup=keyboard)
 
 
@@ -496,15 +496,21 @@ def a(call):
 			global set_pr_min
 			set_pr_min = False
 
+		def convert_t_curr_and_set(currency):
+			global min_profit_n
+			if min_profit_n != 0.0:
+				c = CurrencyConverter()
+				min_profit_n = c.convert(min_profit_n, curr, currency)
+				config.set('settings', 'min_profit_n', str(min_profit_n))
+				save_config()
+			set_currency(currency)
+
 		if call.data == 'USD':
 			bot.edit_message_text(chat_id=call.message.chat.id, message_id=call.message.message_id, text=common_str.USD)
-			set_currency(call.data)
+			convert_t_curr_and_set(call.data)
 		if call.data == 'RUB':
 			bot.edit_message_text(chat_id=call.message.chat.id, message_id=call.message.message_id, text=common_str.RUB)
-			set_currency(call.data)
-		if call.data == 'UAH':
-			set_currency(call.data)
-			bot.edit_message_text(chat_id=call.message.chat.id, message_id=call.message.message_id, text=common_str.UAH)
+			convert_t_curr_and_set(call.data)
 
 		if call.data == 'ru':
 			if m_fail:
