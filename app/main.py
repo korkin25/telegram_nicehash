@@ -354,18 +354,15 @@ def a(message):
 def _get_mining_data(message):
 	if message.chat.id == msg_id:
 		set_keyboard(1, 3)
-		try:
-			check(3)
-			str_send = '1 BTC = ' + str(price_currency_int) + ' ' + curr + '\n\n' + strings.mining_algo + str(
-				', '.join(str(v) for v in w) + '\n' + strings.workers_active + str(
-					total_workers) + '\n' + strings.profit_per_day + str(profit_btc_day) + ' BTC (' + str(
-					profit_fiat_day) + ' ' + curr + ')\n' + strings.unpaid + str(balance_btc) + ' BTC (' + str(
-					balance_fiat) + ' ' + curr + ')')
-			print(str_send)
-			bot.send_message(msg_id, str_send, reply_markup=keyboard)
-		except:
-			set_keyboard(0, 1)
-			bot.send_message(msg_id, strings.addr_invalid, reply_markup=keyboard)
+		check(3)
+		str_send = '1 BTC = ' + str(price_currency_int) + ' ' + curr + '\n\n' + strings.mining_algo + str(
+			', '.join(str(v) for v in w) + '\n' + strings.workers_active + str(
+				total_workers) + '\n' + strings.profit_per_day + str(profit_btc_day) + ' BTC (' + str(
+				profit_fiat_day) + ' ' + curr + ')\n' + strings.unpaid + str(balance_btc) + ' BTC (' + str(
+				balance_fiat) + ' ' + curr + ')')
+		str_send = str_send.encode('utf-8')
+		print(str_send)
+		bot.send_message(msg_id, str_send, reply_markup=keyboard)
 
 
 @bot.message_handler(commands=[common_str.get_mining_data])
