@@ -263,6 +263,29 @@ def set_keyboard(arg, rw):
 		keyboard.add(kb_start_m, kb_stop_m, kb_set_m_n, kb_set_a, kb_set_c, kb_set_l, kb_data)
 
 
+def check_pr_err_():
+	if (min_profit_n and max_profit_n) != 0.0:
+		if min_profit_n < max_profit_n:
+			return True
+		else:
+			return False
+	else:
+		return True
+
+def inline_kb_set_pr(arg):
+	keyboard = types.InlineKeyboardMarkup()
+
+	if arg == 0:
+		button_pr_err_ok = types.InlineKeyboardButton(text=strings.notification_pr_err_ok, callback_data='pr_err_ok_min')
+		button_pr_err_return = types.InlineKeyboardButton(text=strings.notification_pr_err_return, callback_data='pr_err_return_min')
+		keyboard.add(button_pr_err_ok, button_pr_err_return)
+		bot.send_message(msg_id, strings.notification_pr_err, reply_markup=keyboard)
+	if arg == 1:
+		button_pr_err_ok = types.InlineKeyboardButton(text=strings.notification_pr_err_ok, callback_data='pr_err_ok_max')
+		button_pr_err_return = types.InlineKeyboardButton(text=strings.notification_pr_err_return, callback_data='pr_err_return_max')
+		keyboard.add(button_pr_err_ok, button_pr_err_return)
+		bot.send_message(msg_id, strings.notification_pr_err, reply_markup=keyboard)
+
 def set_pr_min_(pr_min):
 	global set_pr_min
 	global min_profit_n
@@ -271,12 +294,15 @@ def set_pr_min_(pr_min):
 	p_min_notification = False
 	try:
 		min_profit_n = float(pr_min)
-		config.set('settings', 'min_profit_n', pr_min)
-		save_config()
-		if min_profit_n == 0.0:
-			bot.send_message(msg_id, strings.notification_profit_min_disabled)
+		if check_pr_err_():
+			config.set('settings', 'min_profit_n', pr_min)
+			save_config()
+			if min_profit_n == 0.0:
+				bot.send_message(msg_id, strings.notification_profit_min_disabled)
+			else:
+				bot.send_message(msg_id, strings.notification_profit_ok)
 		else:
-			bot.send_message(msg_id, strings.notification_profit_ok)
+			inline_kb_set_pr(0)
 	except:
 		bot.send_message(msg_id, strings.notification_profit_error)
 
@@ -288,12 +314,15 @@ def set_pr_max_(pr_max):
 	p_max_notification = False
 	try:
 		max_profit_n = float(pr_max)
-		config.set('settings', 'max_profit_n', pr_max)
-		save_config()
-		if max_profit_n == 0.0:
-			bot.send_message(msg_id, strings.notification_profit_max_disabled)
+		if check_pr_err_():
+			config.set('settings', 'max_profit_n', pr_max)
+			save_config()
+			if max_profit_n == 0.0:
+				bot.send_message(msg_id, strings.notification_profit_max_disabled)
+			else:
+				bot.send_message(msg_id, strings.notification_profit_ok)
 		else:
-			bot.send_message(msg_id, strings.notification_profit_ok)
+			inline_kb_set_pr(1)
 	except:
 		bot.send_message(msg_id, strings.notification_profit_error)
 
@@ -522,6 +551,7 @@ def a(call):
 	global m_fail
 	global worker_notification
 	global set_pr_min
+	global set_pr_max
 	if call.message:
 		if call.data == 'cancel':
 			bot.edit_message_text(chat_id=call.message.chat.id, message_id=call.message.message_id, text=strings.cancelled)
@@ -533,12 +563,10 @@ def a(call):
 		if call.data == 'cancel_pr_min':
 			bot.edit_message_text(chat_id=call.message.chat.id, message_id=call.message.message_id,
 								  text=strings.cancelled)
-			global set_pr_min
 			set_pr_min = False
 		if call.data == 'cancel_pr_max':
 			bot.edit_message_text(chat_id=call.message.chat.id, message_id=call.message.message_id,
 								  text=strings.cancelled)
-			global set_pr_max
 			set_pr_max = False
 
 		def convert_t_curr_and_set(currency):
@@ -625,6 +653,30 @@ def a(call):
 			set_pr_max_('0')
 			bot.delete_message(chat_id=call.message.chat.id, message_id=call.message.message_id)
 
+		if call.data == 'pr_err_return_min':
+			set_pr_min = True
+			keyboard = types.InlineKeyboardMarkup()
+			button_cancel_min_t = types.InlineKeyboardButton(text=strings.cancel, callback_data='cancel_pr_min')
+			keyboard.add(button_cancel_min_t)
+			bot.edit_message_text(chat_id=call.message.chat.id, message_id=call.message.message_id,
+								  text=strings.notification_profit_min_help + ' ' + curr, reply_markup=keyboard)
+		if call.data == 'pr_err_return_max':
+			set_pr_max = True
+			keyboard = types.InlineKeyboardMarkup()
+			button_cancel_min_t = types.InlineKeyboardButton(text=strings.cancel, callback_data='cancel_pr_max')
+			keyboard.add(button_cancel_min_t)
+			bot.edit_message_text(chat_id=call.message.chat.id, message_id=call.message.message_id,
+								  text=strings.notification_profit_max_help + ' ' + curr, reply_markup=keyboard)
+		if call.data == 'pr_err_ok_min':
+			config.set('settings', 'min_profit_n', str(min_profit_n))
+			save_config()
+			bot.edit_message_text(chat_id=call.message.chat.id, message_id=call.message.message_id,
+								  text=strings.notification_profit_ok)
+		if call.data == 'pr_err_ok_max':
+			config.set('settings', 'max_profit_n', str(max_profit_n))
+			save_config()
+			bot.edit_message_text(chat_id=call.message.chat.id, message_id=call.message.message_id,
+								  text=strings.notification_profit_ok)
 
 @bot.message_handler(content_types='text')
 def a(message):
