@@ -59,8 +59,10 @@ notification_profit_max_alert = '📈 Прибыль поднялась выше
 notification_profit_max_no = '📉 Прибыль вернулась за порог максимума'
 
 notification_pr_err = '⚠️ Нижний порог больше верхнего. Вы уверены?'
-notification_pr_err_ok = '🤷‍♀️ Да, сохранить'
-notification_pr_err_return = '⤴️ Повторить ввод'
+notification_pr_err_ok = '🤷‍♀️ Сохранить'
+notification_pr_err_return = '⤴️ Повторить'
+notification_pr_err_dis_min = '🔕 min и сохранить'
+notification_pr_err_dis_max = '🔕 max и сохранить'
 
 
 notification_workers_disabled = '🔕 Оповещения об изменении числа воркеров отключены'

@@ -62,6 +62,8 @@ notification_profit_max_no = '📉 Profit returned below the maximum threshold'
 notification_pr_err = '⚠️ The lower threshold is greater than the upper one. Are you sure?'
 notification_pr_err_ok = '🤷‍♀️ Yes, save'
 notification_pr_err_return = '⤴️ Try again'
+notification_pr_err_dis_min = '🔕 Min and save'
+notification_pr_err_dis_max = '🔕 Max and save'
 
 notification_workers_disabled = '🔕 Notifications about workers are disabled'
 notification_workers_enabled = '🔔 Notifications about workers are enabled'

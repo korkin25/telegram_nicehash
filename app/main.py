@@ -278,12 +278,14 @@ def inline_kb_set_pr(arg):
 	if arg == 0:
 		button_pr_err_ok = types.InlineKeyboardButton(text=strings.notification_pr_err_ok, callback_data='pr_err_ok_min')
 		button_pr_err_return = types.InlineKeyboardButton(text=strings.notification_pr_err_return, callback_data='pr_err_return_min')
-		keyboard.add(button_pr_err_ok, button_pr_err_return)
+		button_pr_err_disable_max = types.InlineKeyboardButton(text=strings.notification_pr_err_dis_max, callback_data='pr_err_dis_max')
+		keyboard.add(button_pr_err_ok, button_pr_err_return, button_pr_err_disable_max)
 		bot.send_message(msg_id, strings.notification_pr_err, reply_markup=keyboard)
 	if arg == 1:
 		button_pr_err_ok = types.InlineKeyboardButton(text=strings.notification_pr_err_ok, callback_data='pr_err_ok_max')
 		button_pr_err_return = types.InlineKeyboardButton(text=strings.notification_pr_err_return, callback_data='pr_err_return_max')
-		keyboard.add(button_pr_err_ok, button_pr_err_return)
+		button_pr_err_disable_min = types.InlineKeyboardButton(text=strings.notification_pr_err_dis_min, callback_data='pr_err_dis_min')
+		keyboard.add(button_pr_err_ok, button_pr_err_return, button_pr_err_disable_min)
 		bot.send_message(msg_id, strings.notification_pr_err, reply_markup=keyboard)
 
 def set_pr_min_(pr_min):
@@ -653,6 +655,23 @@ def a(call):
 			set_pr_max_('0')
 			bot.delete_message(chat_id=call.message.chat.id, message_id=call.message.message_id)
 
+		def save_pr_after_err(arg):
+			if arg == 0:
+				config.set('settings', 'min_profit_n', str(min_profit_n))
+			if arg == 1:
+				config.set('settings', 'max_profit_n', str(max_profit_n))
+
+			save_config()
+			bot.edit_message_text(chat_id=call.message.chat.id, message_id=call.message.message_id,
+								  text=strings.notification_profit_ok)
+
+
+		if call.data == 'pr_err_ok_min':
+			save_pr_after_err(0)
+
+		if call.data == 'pr_err_ok_max':
+			save_pr_after_err(1)
+
 		if call.data == 'pr_err_return_min':
 			set_pr_min = True
 			keyboard = types.InlineKeyboardMarkup()
@@ -667,16 +686,13 @@ def a(call):
 			keyboard.add(button_cancel_min_t)
 			bot.edit_message_text(chat_id=call.message.chat.id, message_id=call.message.message_id,
 								  text=strings.notification_profit_max_help + ' ' + curr, reply_markup=keyboard)
-		if call.data == 'pr_err_ok_min':
-			config.set('settings', 'min_profit_n', str(min_profit_n))
-			save_config()
-			bot.edit_message_text(chat_id=call.message.chat.id, message_id=call.message.message_id,
-								  text=strings.notification_profit_ok)
-		if call.data == 'pr_err_ok_max':
-			config.set('settings', 'max_profit_n', str(max_profit_n))
-			save_config()
-			bot.edit_message_text(chat_id=call.message.chat.id, message_id=call.message.message_id,
-								  text=strings.notification_profit_ok)
+		if call.data == 'pr_err_dis_max':
+			set_pr_max_('0')
+			save_pr_after_err(0)
+
+		if call.data == 'pr_err_dis_min':
+			set_pr_min_('0')
+			save_pr_after_err(1)
 
 @bot.message_handler(content_types='text')
 def a(message):
