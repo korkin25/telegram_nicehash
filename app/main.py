@@ -65,8 +65,11 @@ lang_lock = False
 m_fail = False
 set_a = False
 set_pr_min = False
+set_pr_max = False
 btn_min_t_dis = False
-p_m_notification = False
+btn_max_t_dis = False
+p_min_notification = False
+p_max_notification = False
 workers0 = 0
 workers1 = 0
 ch_notify = False
@@ -213,7 +216,8 @@ def check(kk):
 	global workers1
 	global total_workers
 	global ch_notify
-	global p_m_notification
+	global p_min_notification
+	global p_max_notification
 	data_ = start()
 	if kk != 3:
 		if kk % 2 == 0:
@@ -226,12 +230,18 @@ def check(kk):
 		if ch_notify >= 2:
 			if workers0 != workers1 and worker_notification:
 				bot.send_message(msg_id, strings.workers_active + str(total_workers))
-		if data_[4] < min_profit_n != 0.0 and not p_m_notification:
+		if data_[4] < min_profit_n != 0.0 and not p_min_notification:
 			bot.send_message(msg_id, strings.notification_profit_min_alert + '\n' + strings.profit_per_day + str(data_[4]) + ' ' + curr)
-			p_m_notification = True
-		if data_[4] > min_profit_n != 0.0 and p_m_notification:
+			p_min_notification = True
+		if data_[4] > min_profit_n != 0.0 and p_min_notification:
 			bot.send_message(msg_id, strings.notification_profit_min_no + '\n' + strings.profit_per_day + str(data_[4]) + ' ' + curr)
-			p_m_notification = False
+			p_min_notification = False
+		if data_[4] > max_profit_n != 0.0 and not p_max_notification:
+			bot.send_message(msg_id, strings.notification_profit_max_alert + '\n' + strings.profit_per_day + str(data_[4]) + ' ' + curr)
+			p_max_notification = True
+		if data_[4] < max_profit_n != 0.0 and p_max_notification:
+			bot.send_message(msg_id, strings.notification_profit_max_no + '\n' + strings.profit_per_day + str(data_[4]) + ' ' + curr)
+			p_max_notification = False
 	else:
 		int(data_[2])
 
@@ -256,13 +266,32 @@ def set_keyboard(arg, rw):
 def set_pr_min_(pr_min):
 	global set_pr_min
 	global min_profit_n
+	global p_min_notification
 	set_pr_min = False
+	p_min_notification = False
 	try:
 		min_profit_n = float(pr_min)
 		config.set('settings', 'min_profit_n', pr_min)
 		save_config()
 		if min_profit_n == 0.0:
 			bot.send_message(msg_id, strings.notification_profit_min_disabled)
+		else:
+			bot.send_message(msg_id, strings.notification_profit_ok)
+	except:
+		bot.send_message(msg_id, strings.notification_profit_error)
+
+def set_pr_max_(pr_max):
+	global set_pr_max
+	global max_profit_n
+	global p_max_notification
+	set_pr_max = False
+	p_max_notification = False
+	try:
+		max_profit_n = float(pr_max)
+		config.set('settings', 'max_profit_n', pr_max)
+		save_config()
+		if max_profit_n == 0.0:
+			bot.send_message(msg_id, strings.notification_profit_max_disabled)
 		else:
 			bot.send_message(msg_id, strings.notification_profit_ok)
 	except:
@@ -444,6 +473,7 @@ def a(message):
 def _set_notifications(message):
 	if message.chat.id == msg_id:
 		global btn_min_t_dis
+		global btn_max_t_dis
 		keyboard = types.InlineKeyboardMarkup()
 		workers_n_ = config.get('settings', 'workers_n')
 
@@ -461,13 +491,23 @@ def _set_notifications(message):
 			btn_min_p_n_label = strings.notification_false + strings.notification_true
 			btn_min_t_dis = True
 		min_p_callback = 'pr_min'
+
+		if float(config.get('settings', 'max_profit_n')) == 0.0:
+			btn_max_p_n_label = strings.notification_true
+			btn_max_t_dis = False
+		else:
+			btn_max_p_n_label = strings.notification_false + strings.notification_true
+			btn_max_t_dis = True
+		max_p_callback = 'pr_max'
 		
 		btn_workers_n_label += strings.set_notification_workers
 		btn_min_p_n_label += strings.set_notification_profit_min
+		btn_max_p_n_label += strings.set_notification_profit_max
 		button_workers_n = types.InlineKeyboardButton(text=btn_workers_n_label, callback_data=workers_n_callback)
 		button_min_p_n = types.InlineKeyboardButton(text=btn_min_p_n_label, callback_data=min_p_callback)
+		button_max_p_n = types.InlineKeyboardButton(text=btn_max_p_n_label, callback_data=max_p_callback)
 		button_cancel_n = types.InlineKeyboardButton(text=strings.cancel, callback_data='cancel')
-		keyboard.add(button_workers_n, button_min_p_n, button_cancel_n)
+		keyboard.add(button_workers_n, button_min_p_n, button_max_p_n, button_cancel_n)
 		bot.send_message(msg_id, strings.notification_set_menu_msg, reply_markup=keyboard)
 
 
@@ -495,13 +535,24 @@ def a(call):
 								  text=strings.cancelled)
 			global set_pr_min
 			set_pr_min = False
+		if call.data == 'cancel_pr_max':
+			bot.edit_message_text(chat_id=call.message.chat.id, message_id=call.message.message_id,
+								  text=strings.cancelled)
+			global set_pr_max
+			set_pr_max = False
 
 		def convert_t_curr_and_set(currency):
 			global min_profit_n
+			global max_profit_n
 			if min_profit_n != 0.0:
 				c = CurrencyConverter()
 				min_profit_n = c.convert(min_profit_n, curr, currency)
 				config.set('settings', 'min_profit_n', str(min_profit_n))
+				save_config()
+			if max_profit_n != 0.0:
+				c = CurrencyConverter()
+				max_profit_n = c.convert(max_profit_n, curr, currency)
+				config.set('settings', 'max_profit_n', str(max_profit_n))
 				save_config()
 			set_currency(currency)
 
@@ -559,6 +610,21 @@ def a(call):
 			set_pr_min_('0')
 			bot.delete_message(chat_id=call.message.chat.id, message_id=call.message.message_id)
 
+		if call.data == 'pr_max':
+			set_pr_max = True
+			keyboard = types.InlineKeyboardMarkup()
+			button_disable_m_p = types.InlineKeyboardButton(text=strings.disable_t, callback_data='disable_max')
+			button_cancel_max_t = types.InlineKeyboardButton(text=strings.cancel, callback_data='cancel_pr_max')
+			if btn_max_t_dis:
+				keyboard.add(button_disable_m_p, button_cancel_max_t)
+			else:
+				keyboard.add(button_cancel_max_t)
+			bot.edit_message_text(chat_id=call.message.chat.id, message_id=call.message.message_id,
+								  text=strings.notification_profit_max_help + ' ' + curr, reply_markup=keyboard)
+		if call.data == 'disable_max':
+			set_pr_max_('0')
+			bot.delete_message(chat_id=call.message.chat.id, message_id=call.message.message_id)
+
 
 @bot.message_handler(content_types='text')
 def a(message):
@@ -578,7 +644,7 @@ def a(message):
 		if message.text == strings.keyboard_set_monitor_n:
 			_set_notifications(message)
 
-		if set_a or set_pr_min:
+		if set_a or set_pr_min or set_pr_max:
 			if message.text != strings.keyboard_data\
 					and message.text != strings.keyboard_start_monitor \
 					and message.text != strings.keyboard_stop_monitor\
@@ -591,7 +657,8 @@ def a(message):
 					set_address(message.text)
 				if set_pr_min:
 					set_pr_min_(message.text)
-
+				if set_pr_max:
+					set_pr_max_(message.text)
 
 if lang != '' and msg_id != 0:
 	if addr == '':
