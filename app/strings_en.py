@@ -14,7 +14,6 @@ cancel = '❌ Close'
 cancelled = '❌ Closed'
 disable_t = '❌ Disable threshold'
 
-
 select_curr = '✅ Select the currency'
 
 lang_e = '❌ This language has already been selected'
@@ -47,8 +46,8 @@ notification_true = '🔔 '
 notification_false = '🔕 '
 
 set_notification_workers = 'Workers'
-set_notification_profit_min = 'Min profit'
-set_notification_profit_max = 'Max profit'
+set_notification_profit_min = '📉'
+set_notification_profit_max = '📈'
 
 notification_profit_min_help = '📉 Minimum profit threshold\nSpecify in the selected currency'
 notification_profit_max_help = '📉 Maximum profit threshold\nSpecify in the selected currency'

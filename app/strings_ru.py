@@ -46,8 +46,8 @@ notification_true = '🔔 '
 notification_false = '🔕 '
 
 set_notification_workers = 'Воркеры'
-set_notification_profit_min = 'min прибыль'
-set_notification_profit_max = 'max прибыль'
+set_notification_profit_min = '📉'
+set_notification_profit_max = '📈'
 
 notification_profit_min_help = '📉 Минимальный порог прибыли\nУкажите в'
 notification_profit_max_help = '📉 Максимальный порог прибыли\nУкажите в'

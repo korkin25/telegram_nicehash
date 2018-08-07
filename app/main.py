@@ -27,10 +27,11 @@ if not os.path.exists(path):
 config = configparser.ConfigParser()
 config.read(path)
 
+
 def save_config():
-	global config_file
 	with open(path, "w") as config_file:
 		config.write(config_file)
+
 
 if rr.t is not None:
 	bot = telebot.TeleBot(rr.t)
@@ -85,6 +86,7 @@ if config.get('settings', 'workers_n') == '1':
 else:
 	worker_notification = False
 
+
 def start():
 	global price_currency_int
 	global total_workers
@@ -94,13 +96,13 @@ def start():
 	global balance_fiat
 	global w
 	w = []
-	reqStats = urllib.request.Request(stats)
+	req_stats = urllib.request.Request(stats)
 	threading.Event()
 	hdr = {'User-Agent': 'Mozilla/5.0'}
 	locale.setlocale(locale.LC_ALL, '')
-	reqPrice = urllib.request.Request(price, headers=hdr)
-	rPrice = urllib.request.urlopen(reqPrice).read()
-	cccc = re.split(curr, str(rPrice))
+	req_price = urllib.request.Request(price, headers=hdr)
+	r_price = urllib.request.urlopen(req_price).read()
+	cccc = re.split(curr, str(r_price))
 	if curr == 'USD':
 		cccc_i = -1
 		ccc_i = -1
@@ -113,49 +115,38 @@ def start():
 		cc_ = cc[0][1:-4]
 	else:
 		cc_ = cc[0] + cc[1]
-	priceCurrency = float(cc_)
-	print("\n\nUsing Currency: BTC/{0} = {1:,.2f}".format(curr, priceCurrency))
+	price_currency = float(cc_)
 
-	rStats = urllib.request.urlopen(reqStats).read()
-	cont = json.loads(rStats.decode('utf-8'))
+	r_stats = urllib.request.urlopen(req_stats).read()
+	cont = json.loads(r_stats.decode('utf-8'))
 	counter = 0
 	balance = 0
-	totalWorkers = 0
+	total_workers_ = 0
 	profitability = 0
 
 	try:
 		for item in cont['result']['current']:
 			counter += 1
 			balance += float(item['data'][1])
-			print("Algo: ({0}) {1}".format(item['algo'], item['name']))
 			worker = 'https://api.nicehash.com/api?method=stats.provider.workers&addr=' + addr + '&algo=' + str(
 				item['algo'])
-			reqWorkers = urllib.request.Request(worker)
-			rWorker = urllib.request.urlopen(reqWorkers).read()
-			totalWorkers += len(json.loads(rWorker.decode('utf-8'))['result']['workers'])
-			print("Workers: {0}".format(len(json.loads(rWorker.decode('utf-8'))['result']['workers'])))
+			req_workers = urllib.request.Request(worker)
+			r_worker = urllib.request.urlopen(req_workers).read()
+			total_workers_ += len(json.loads(r_worker.decode('utf-8'))['result']['workers'])
 			if len(item['data'][0]) >= 1:
 				w.append(item['name'])
-				print("Accepted Speed: {0} {1}/s".format(item['data'][0]['a'], item['suffix']))
-				print("Profitability: {0} BTC/day or {1:,.2f} {2}/day".format(
-					float(item['profitability']) * float(item['data'][0]['a']),
-					float(item['profitability']) * float(item['data'][0]['a']) * priceCurrency, curr))
 
-			if (len(json.loads(rWorker.decode('utf-8'))['result']['workers']) >= 1):
+			if len(json.loads(r_worker.decode('utf-8'))['result']['workers']) >= 1:
 				profitability += float(float(item['profitability']) * float(item['data'][0]['a']))
-			print("Balance: {0} BTC or {1:,.2f} {2}".format(item['data'][1], float(item['data'][1]) * priceCurrency,
-															curr))
-			print("---------------------------------------------------")
 	except:
 		return ConnectionAbortedError
 
-	price_currency_int = int(priceCurrency)
-	#total_algo = counter
-	total_workers = totalWorkers
+	price_currency_int = int(price_currency)
+	total_workers = total_workers_
 	profit_btc_day = round(profitability, 8)
-	profit_fiat_day = round(float(profitability) * priceCurrency, 2)
+	profit_fiat_day = round(float(profitability) * price_currency, 2)
 	balance_btc = round(balance, 8)
-	balance_fiat = round(balance * priceCurrency, 2)
+	balance_fiat = round(balance * price_currency, 2)
 	return price_currency_int, w, total_workers, profit_btc_day, profit_fiat_day, balance_btc, balance_fiat
 
 
@@ -231,16 +222,20 @@ def check(kk):
 			if workers0 != workers1 and worker_notification:
 				bot.send_message(msg_id, strings.workers_active + str(total_workers))
 		if data_[4] < min_profit_n != 0.0 and not p_min_notification:
-			bot.send_message(msg_id, strings.notification_profit_min_alert + '\n' + strings.profit_per_day + str(data_[4]) + ' ' + curr)
+			bot.send_message(msg_id, strings.notification_profit_min_alert + '\n' + strings.profit_per_day + str(
+				data_[4]) + ' ' + curr)
 			p_min_notification = True
 		if data_[4] > min_profit_n != 0.0 and p_min_notification:
-			bot.send_message(msg_id, strings.notification_profit_min_no + '\n' + strings.profit_per_day + str(data_[4]) + ' ' + curr)
+			bot.send_message(msg_id, strings.notification_profit_min_no + '\n' + strings.profit_per_day + str(
+				data_[4]) + ' ' + curr)
 			p_min_notification = False
 		if data_[4] > max_profit_n != 0.0 and not p_max_notification:
-			bot.send_message(msg_id, strings.notification_profit_max_alert + '\n' + strings.profit_per_day + str(data_[4]) + ' ' + curr)
+			bot.send_message(msg_id, strings.notification_profit_max_alert + '\n' + strings.profit_per_day + str(
+				data_[4]) + ' ' + curr)
 			p_max_notification = True
 		if data_[4] < max_profit_n != 0.0 and p_max_notification:
-			bot.send_message(msg_id, strings.notification_profit_max_no + '\n' + strings.profit_per_day + str(data_[4]) + ' ' + curr)
+			bot.send_message(msg_id, strings.notification_profit_max_no + '\n' + strings.profit_per_day + str(
+				data_[4]) + ' ' + curr)
 			p_max_notification = False
 	else:
 		int(data_[2])
@@ -272,21 +267,29 @@ def check_pr_err_():
 	else:
 		return True
 
+
 def inline_kb_set_pr(arg):
 	keyboard = types.InlineKeyboardMarkup()
 
 	if arg == 0:
-		button_pr_err_ok = types.InlineKeyboardButton(text=strings.notification_pr_err_ok, callback_data='pr_err_ok_min')
-		button_pr_err_return = types.InlineKeyboardButton(text=strings.notification_pr_err_return, callback_data='pr_err_return_min')
-		button_pr_err_disable_max = types.InlineKeyboardButton(text=strings.notification_pr_err_dis_max, callback_data='pr_err_dis_max')
+		button_pr_err_ok = types.InlineKeyboardButton(text=strings.notification_pr_err_ok,
+													  callback_data='pr_err_ok_min')
+		button_pr_err_return = types.InlineKeyboardButton(text=strings.notification_pr_err_return,
+														  callback_data='pr_err_return_min')
+		button_pr_err_disable_max = types.InlineKeyboardButton(text=strings.notification_pr_err_dis_max,
+															   callback_data='pr_err_dis_max')
 		keyboard.add(button_pr_err_ok, button_pr_err_return, button_pr_err_disable_max)
 		bot.send_message(msg_id, strings.notification_pr_err, reply_markup=keyboard)
 	if arg == 1:
-		button_pr_err_ok = types.InlineKeyboardButton(text=strings.notification_pr_err_ok, callback_data='pr_err_ok_max')
-		button_pr_err_return = types.InlineKeyboardButton(text=strings.notification_pr_err_return, callback_data='pr_err_return_max')
-		button_pr_err_disable_min = types.InlineKeyboardButton(text=strings.notification_pr_err_dis_min, callback_data='pr_err_dis_min')
+		button_pr_err_ok = types.InlineKeyboardButton(text=strings.notification_pr_err_ok,
+													  callback_data='pr_err_ok_max')
+		button_pr_err_return = types.InlineKeyboardButton(text=strings.notification_pr_err_return,
+														  callback_data='pr_err_return_max')
+		button_pr_err_disable_min = types.InlineKeyboardButton(text=strings.notification_pr_err_dis_min,
+															   callback_data='pr_err_dis_min')
 		keyboard.add(button_pr_err_ok, button_pr_err_return, button_pr_err_disable_min)
 		bot.send_message(msg_id, strings.notification_pr_err, reply_markup=keyboard)
+
 
 def set_pr_min_(pr_min):
 	global set_pr_min
@@ -307,6 +310,7 @@ def set_pr_min_(pr_min):
 			inline_kb_set_pr(0)
 	except:
 		bot.send_message(msg_id, strings.notification_profit_error)
+
 
 def set_pr_max_(pr_max):
 	global set_pr_max
@@ -361,7 +365,6 @@ def _get_mining_data(message):
 				profit_fiat_day) + ' ' + curr + ')\n' + strings.unpaid + str(balance_btc) + ' BTC (' + str(
 				balance_fiat) + ' ' + curr + ')')
 		str_send = str_send.encode('utf-8')
-		print(str_send)
 		bot.send_message(msg_id, str_send, reply_markup=keyboard)
 
 
@@ -478,6 +481,7 @@ def _set_language(message):
 						config.set('settings', 'monitor', '0')
 						save_config()
 
+
 @bot.message_handler(commands=[common_str.set_language])
 def a(message):
 	_set_language(message)
@@ -513,24 +517,25 @@ def _set_notifications(message):
 			btn_workers_n_label = strings.notification_true
 
 		if float(config.get('settings', 'min_profit_n')) == 0.0:
-			btn_min_p_n_label = strings.notification_true
+			btn_min_p_n_label = strings.notification_true + strings.set_notification_profit_min
 			btn_min_t_dis = False
 		else:
-			btn_min_p_n_label = strings.notification_false + strings.notification_true
+			btn_min_p_n_label = strings.notification_false + strings.notification_true + strings.set_notification_profit_min
+			btn_min_p_n_label += str(int(float(config.get('settings', 'min_profit_n'))))
 			btn_min_t_dis = True
 		min_p_callback = 'pr_min'
 
 		if float(config.get('settings', 'max_profit_n')) == 0.0:
-			btn_max_p_n_label = strings.notification_true
+			btn_max_p_n_label = strings.notification_true + strings.set_notification_profit_max
 			btn_max_t_dis = False
 		else:
-			btn_max_p_n_label = strings.notification_false + strings.notification_true
+			btn_max_p_n_label = strings.notification_false + strings.notification_true + strings.set_notification_profit_max
+			btn_max_p_n_label += str(int(float(config.get('settings', 'max_profit_n'))))
 			btn_max_t_dis = True
 		max_p_callback = 'pr_max'
-		
+
 		btn_workers_n_label += strings.set_notification_workers
-		btn_min_p_n_label += strings.set_notification_profit_min
-		btn_max_p_n_label += strings.set_notification_profit_max
+
 		button_workers_n = types.InlineKeyboardButton(text=btn_workers_n_label, callback_data=workers_n_callback)
 		button_min_p_n = types.InlineKeyboardButton(text=btn_min_p_n_label, callback_data=min_p_callback)
 		button_max_p_n = types.InlineKeyboardButton(text=btn_max_p_n_label, callback_data=max_p_callback)
@@ -553,10 +558,12 @@ def a(call):
 	global set_pr_max
 	if call.message:
 		if call.data == 'cancel':
-			bot.edit_message_text(chat_id=call.message.chat.id, message_id=call.message.message_id, text=strings.cancelled)
+			bot.edit_message_text(chat_id=call.message.chat.id, message_id=call.message.message_id,
+								  text=strings.cancelled)
 
 		if call.data == 'cancel_sa':
-			bot.edit_message_text(chat_id=call.message.chat.id, message_id=call.message.message_id, text=strings.cancelled)
+			bot.edit_message_text(chat_id=call.message.chat.id, message_id=call.message.message_id,
+								  text=strings.cancelled)
 			global set_a
 			set_a = False
 		if call.data == 'cancel_pr_min':
@@ -662,7 +669,6 @@ def a(call):
 			bot.edit_message_text(chat_id=call.message.chat.id, message_id=call.message.message_id,
 								  text=strings.notification_profit_ok)
 
-
 		if call.data == 'pr_err_ok_min':
 			save_pr_after_err(0)
 
@@ -691,6 +697,7 @@ def a(call):
 			set_pr_min_('0')
 			save_pr_after_err(1)
 
+
 @bot.message_handler(content_types='text')
 def a(message):
 	if message.chat.id == msg_id:
@@ -710,13 +717,13 @@ def a(message):
 			_set_notifications(message)
 
 		if set_a or set_pr_min or set_pr_max:
-			if message.text != strings.keyboard_data\
+			if message.text != strings.keyboard_data \
 					and message.text != strings.keyboard_start_monitor \
-					and message.text != strings.keyboard_stop_monitor\
+					and message.text != strings.keyboard_stop_monitor \
 					and message.text != strings.keyboard_set_address \
-					and message.text != strings.keyboard_first_set_address\
-					and message.text != strings.keyboard_set_currency\
-					and message.text != strings.keyboard_set_language\
+					and message.text != strings.keyboard_first_set_address \
+					and message.text != strings.keyboard_set_currency \
+					and message.text != strings.keyboard_set_language \
 					and message.text != strings.keyboard_set_monitor_n:
 				if set_a:
 					set_address(message.text)
@@ -724,6 +731,7 @@ def a(message):
 					set_pr_min_(message.text)
 				if set_pr_max:
 					set_pr_max_(message.text)
+
 
 if lang != '' and msg_id != 0:
 	if addr == '':
@@ -737,7 +745,6 @@ if lang != '' and msg_id != 0:
 			save_config()
 		else:
 			bot.send_message(msg_id, strings.what_do, reply_markup=keyboard)
-
 
 if __name__ == '__main__':
 	try:

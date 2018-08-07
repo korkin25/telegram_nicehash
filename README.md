@@ -3,10 +3,10 @@ The project uses the [NiceHash Viewer API](https://github.com/adityudhna/nicehas
 
 ## Features
 - Shows the mining profitability, mining algorithms, unpaid balance
-- Notification when changing the number of workers
+- Notification on changes in the number of workers and increase or decrease in profits
 
 ## Installing dependencies 
-### Ubuntu (with Python 3.6.x)
+### Ubuntu/Debian
 ```
 apt-get update
 apt-get install -y python3 python3-pip
