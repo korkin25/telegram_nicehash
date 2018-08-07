@@ -9,6 +9,7 @@ monitor_already_stopped = 'ℹ️ Monitoring not started'
 monitor_restart = '⚠️ Monitoring was stopped.' \
                   '\nClick here to restart -> /'\
                   + common_str.start_mining_monitoring
+monitor_error = '⚠️ Error'
 
 cancel = '❌ Close'
 cancelled = '❌ Closed'

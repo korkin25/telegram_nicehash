@@ -290,6 +290,21 @@ def inline_kb_set_pr(arg):
 		keyboard.add(button_pr_err_ok, button_pr_err_return, button_pr_err_disable_min)
 		bot.send_message(msg_id, strings.notification_pr_err, reply_markup=keyboard)
 
+	if arg == 2:
+		button_pr_err_return = types.InlineKeyboardButton(text=strings.notification_pr_err_return,
+														  callback_data='pr_err_return_min')
+		button_pr_cancel = types.InlineKeyboardButton(text=strings.cancel,
+															   callback_data='cancel')
+		keyboard.add(button_pr_err_return, button_pr_cancel)
+		bot.send_message(msg_id, strings.notification_profit_error, reply_markup=keyboard)
+	if arg == 3:
+		button_pr_err_return = types.InlineKeyboardButton(text=strings.notification_pr_err_return,
+														  callback_data='pr_err_return_max')
+		button_pr_cancel = types.InlineKeyboardButton(text=strings.cancel,
+													  callback_data='cancel')
+		keyboard.add(button_pr_err_return, button_pr_cancel)
+		bot.send_message(msg_id, strings.notification_profit_error, reply_markup=keyboard)
+
 
 def set_pr_min_(pr_min):
 	global set_pr_min
@@ -309,7 +324,7 @@ def set_pr_min_(pr_min):
 		else:
 			inline_kb_set_pr(0)
 	except:
-		bot.send_message(msg_id, strings.notification_profit_error)
+		inline_kb_set_pr(2)
 
 
 def set_pr_max_(pr_max):
@@ -330,7 +345,7 @@ def set_pr_max_(pr_max):
 		else:
 			inline_kb_set_pr(1)
 	except:
-		bot.send_message(msg_id, strings.notification_profit_error)
+		inline_kb_set_pr(3)
 
 
 @bot.message_handler(commands=[common_str.start])
@@ -351,13 +366,13 @@ def a(message):
 			if addr == '':
 				set_keyboard(0, 1)
 			else:
-				set_keyboard(1, 3)
+				set_keyboard(1, 2)
 			bot.send_message(msg_id, strings.what_do, reply_markup=keyboard)
 
 
 def _get_mining_data(message):
 	if message.chat.id == msg_id:
-		set_keyboard(1, 3)
+		set_keyboard(1, 2)
 		check(3)
 		str_send = '1 BTC = ' + str(price_currency_int) + ' ' + curr + '\n\n' + strings.mining_algo + str(
 			', '.join(str(v) for v in w) + '\n' + strings.workers_active + str(
@@ -375,7 +390,7 @@ def a(message):
 
 def _start_mining_monitoring(message):
 	if message.chat.id == msg_id:
-		set_keyboard(1, 3)
+		set_keyboard(1, 2)
 		global monitor
 		global loop_term
 		if not monitor:
@@ -738,7 +753,7 @@ if lang != '' and msg_id != 0:
 		set_keyboard(0, 1)
 		bot.send_message(msg_id, strings.what_do, reply_markup=keyboard)
 	else:
-		set_keyboard(1, 3)
+		set_keyboard(1, 2)
 		if config.get('settings', 'monitor') == '1':
 			bot.send_message(msg_id, strings.monitor_restart, reply_markup=keyboard)
 			config.set('settings', 'monitor', '0')

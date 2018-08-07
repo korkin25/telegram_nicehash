@@ -9,6 +9,7 @@ monitor_already_stopped = 'ℹ️ Мониторинг не запущен'
 monitor_restart = '⚠️ Мониторинг был сброшен.' \
                   '\nНажмите для запуска -> /'\
                   + common_str.start_mining_monitoring
+monitor_error = '⚠️ Ошибка получения данных, остановка мониторинга'
 
 cancel = '❌ Закрыть'
 cancelled = '❌ Закрыто'
