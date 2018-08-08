@@ -74,6 +74,9 @@ p_max_notification = False
 workers0 = 0
 workers1 = 0
 ch_notify = False
+profit_list = []
+profit_l_first = True
+profit_avg_f = 0.0
 k = 0
 w = []
 price_currency_int, total_workers, profit_btc_day, profit_fiat_day, balance_btc, balance_fiat = 0, 0, 0, 0, 0, 0
@@ -207,6 +210,9 @@ def check(kk):
 	global workers1
 	global total_workers
 	global ch_notify
+	global profit_list
+	global profit_l_first
+	global profit_avg_f
 	global p_min_notification
 	global p_max_notification
 	data_ = start()
@@ -221,21 +227,28 @@ def check(kk):
 		if ch_notify >= 2:
 			if workers0 != workers1 and worker_notification:
 				bot.send_message(msg_id, strings.workers_active + str(total_workers))
-		if data_[4] < min_profit_n != 0.0 and not p_min_notification:
+		profit_list.append(data_[4])
+		if profit_l_first:
+			profit_avg_f = data_[4]
+		if len(profit_list) == 10:
+			profit_avg_f = sum(profit_list)/len(profit_list)
+			profit_list = []
+			profit_l_first = False
+		if profit_avg_f < min_profit_n != 0.0 and not p_min_notification:
 			bot.send_message(msg_id, strings.notification_profit_min_alert + '\n' + strings.profit_per_day + str(
-				data_[4]) + ' ' + curr)
+				profit_avg_f) + ' ' + curr)
 			p_min_notification = True
-		if data_[4] > min_profit_n != 0.0 and p_min_notification:
+		if profit_avg_f > min_profit_n != 0.0 and p_min_notification:
 			bot.send_message(msg_id, strings.notification_profit_min_no + '\n' + strings.profit_per_day + str(
-				data_[4]) + ' ' + curr)
+				profit_avg_f) + ' ' + curr)
 			p_min_notification = False
-		if data_[4] > max_profit_n != 0.0 and not p_max_notification:
+		if profit_avg_f > max_profit_n != 0.0 and not p_max_notification:
 			bot.send_message(msg_id, strings.notification_profit_max_alert + '\n' + strings.profit_per_day + str(
-				data_[4]) + ' ' + curr)
+				profit_avg_f) + ' ' + curr)
 			p_max_notification = True
-		if data_[4] < max_profit_n != 0.0 and p_max_notification:
+		if profit_avg_f < max_profit_n != 0.0 and p_max_notification:
 			bot.send_message(msg_id, strings.notification_profit_max_no + '\n' + strings.profit_per_day + str(
-				data_[4]) + ' ' + curr)
+				profit_avg_f) + ' ' + curr)
 			p_max_notification = False
 	else:
 		int(data_[2])
@@ -393,9 +406,13 @@ def _start_mining_monitoring(message):
 		set_keyboard(1, 2)
 		global monitor
 		global loop_term
+		global profit_list
+		global profit_l_first
 		if not monitor:
 			if loop_term:
 				monitor = True
+				profit_list = []
+				profit_l_first = True
 				bot.send_message(msg_id, strings.monitor_start)
 				if check_address(addr):
 					config.set('settings', 'monitor', '1')
