@@ -157,6 +157,8 @@ def set_address(address):
 	global addr
 	global stats
 	global set_a
+	global profit_list
+	global profit_l_first
 	if address == addr:
 		return False
 	else:
@@ -167,6 +169,8 @@ def set_address(address):
 		if check_address(address):
 			config.set('settings', 'address', address)
 			save_config()
+			profit_list = []
+			profit_l_first = True
 			set_keyboard(1, 2)
 			bot.send_message(msg_id, strings.addr_ok, reply_markup=keyboard)
 			set_a = False
@@ -386,7 +390,11 @@ def a(message):
 def _get_mining_data(message):
 	if message.chat.id == msg_id:
 		set_keyboard(1, 2)
-		check(3)
+		try:
+			check(3)
+		except urllib.error.URLError:
+			bot.send_message(msg_id, strings.url_error, reply_markup=keyboard)
+
 		str_send = '1 BTC = ' + str(price_currency_int) + ' ' + curr + '\n\n' + strings.mining_algo + str(
 			', '.join(str(v) for v in w) + '\n' + strings.workers_active + str(
 				total_workers) + '\n' + strings.profit_per_day + str(profit_btc_day) + ' BTC (' + str(
@@ -427,11 +435,8 @@ def _start_mining_monitoring(message):
 								k = 0
 							time.sleep(interval)
 							loop_term = True
-					except:
-						set_keyboard(0, 1)
-						bot.send_message(msg_id, strings.addr_invalid)
-						monitor = False
-						loop_term = True
+					except urllib.error.URLError:
+						pass
 			else:
 				bot.send_message(msg_id, strings.monitor_stops, reply_markup=keyboard)
 		else:

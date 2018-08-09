@@ -11,6 +11,8 @@ monitor_restart = '⚠️ Monitoring was stopped.' \
                   + common_str.start_mining_monitoring
 monitor_error = '⚠️ Error'
 
+url_error = '⚠️ Error. Try again later'
+
 cancel = '❌ Close'
 cancelled = '❌ Closed'
 disable_t = '❌ Disable threshold'
