@@ -16,6 +16,7 @@ from currency_converter import CurrencyConverter
 from telebot import types
 
 parser = argparse.ArgumentParser()
+parser.add_argument('-s', '--socks', action='store', dest='s', help='SOCKS5 proxy')
 parser.add_argument('-t', '--token', action='store', dest='t', help='token')
 rr = parser.parse_args()
 
@@ -32,6 +33,21 @@ def save_config():
 	with open(path, "w") as config_file:
 		config.write(config_file)
 
+if rr.s is not None:
+	if rr.s == '0':
+		config.set('settings', 'socks5', '')
+		save_config()
+	else:
+		config.set('settings', 'socks5', rr.s)
+		save_config()
+
+if config.get('settings', 'socks5') != '':
+	socks5_s = config.get('settings', 'socks5')
+	socks5_l = re.split(r':', socks5_s)
+	import socks
+	import socket
+	socks.set_default_proxy(socks.SOCKS5, socks5_l[0], int(socks5_l[1]))
+	socket.socket = socks.socksocket
 
 if rr.t is not None:
 	bot = telebot.TeleBot(rr.t)
@@ -392,7 +408,7 @@ def _get_mining_data(message):
 		set_keyboard(1, 2)
 		try:
 			check(3)
-		except urllib.error.URLError:
+		except:
 			bot.send_message(msg_id, strings.url_error, reply_markup=keyboard)
 
 		str_send = '1 BTC = ' + str(price_currency_int) + ' ' + curr + '\n\n' + strings.mining_algo + str(
@@ -435,7 +451,7 @@ def _start_mining_monitoring(message):
 								k = 0
 							time.sleep(interval)
 							loop_term = True
-					except urllib.error.URLError:
+					except:
 						pass
 			else:
 				bot.send_message(msg_id, strings.monitor_stops, reply_markup=keyboard)
