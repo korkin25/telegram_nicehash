@@ -20,7 +20,7 @@ pip3 install requests[socks]
 Send ```/newbot``` to [@BotFather](https://telegram.me/BotFather) and follow the instructions.
 Launch ```main.py```.
 ```
-cd /path_to_bot/app
+cd /telegram_nicehash-master/app
 python3 main.py -t bot_token_from_BotFather
 ```
 If you need a proxy to access the Internet, you can use ```-s``` key to enter the SOCKS5 proxy server.
@@ -36,7 +36,7 @@ Send ```/start``` to your bot and follow the instructions.
 
 You can start the bot the next time without entering a token or proxy.
 ```
-cd /path_to_bot/app
+cd /telegram_nicehash-master/app
 python3 main.py
 ```
 
@@ -44,10 +44,26 @@ python3 main.py
 
 Remove ```settings.ini``` and restart the bot. This action will reset the settings.
 ```
-cd /path_to_bot/app
+cd /telegram_nicehash-master/app
 rm settings.ini
 python3 main.py -t bot_token_from_BotFather
 ```
+
+## Docker
+
+You can create a Docker image using Dockerfile.
+```
+cd /telegram_nicehash-master
+rm app/settings.ini
+docker build -t vslvcode/telegram_nicehash .
+```
+Launch Docker image.
+
+```
+docker run vslvcode/telegram_nicehash -t bot_token_from_BotFather
+
+```
+
 
 ### Warnings
 - Multi-user not supported
