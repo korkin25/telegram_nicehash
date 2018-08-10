@@ -49,6 +49,13 @@ rm settings.ini
 python3 main.py -t bot_token_from_BotFather
 ```
 
+### Warnings
+- Multi-user not supported
+- Does not work from Windows
+
+### Demo
+![alt text](https://raw.githubusercontent.com/vslvcode/telegram_nicehash/master/demo.png)
+
 ## Docker
 
 You can create a Docker image using Dockerfile.
@@ -63,8 +70,3 @@ Launch Docker image.
 docker run vslvcode/telegram_nicehash -t bot_token_from_BotFather
 
 ```
-
-
-### Warnings
-- Multi-user not supported
-- Does not work from Windows
