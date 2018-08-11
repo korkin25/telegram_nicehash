@@ -8,7 +8,7 @@ pip3 install currencyconverter && \
 pip3 install requests[socks]
 
 ADD app /root/app
-ADD docker_id1.py /root/app
+ADD docker_PID1.py /root/app
 
 WORKDIR /root/app
 

@@ -7,7 +7,6 @@ from sys import argv
 args_l = argv
 del args_l[0]
 args_str = ' '.join(args_l)
-
 Popen("python3 main.py" + ' ' + args_str, shell=True)
 
 while True:

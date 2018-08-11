@@ -33,6 +33,7 @@ def save_config():
 	with open(path, "w") as config_file:
 		config.write(config_file)
 
+
 if rr.s is not None:
 	if rr.s == '0':
 		config.set('settings', 'socks5', '')
@@ -93,6 +94,7 @@ ch_notify = False
 profit_list = []
 profit_l_first = True
 profit_avg_f = 0.0
+profit_avg_num = 0
 k = 0
 w = []
 price_currency_int, total_workers, profit_btc_day, profit_fiat_day, balance_btc, balance_fiat = 0, 0, 0, 0, 0, 0
@@ -233,6 +235,7 @@ def check(kk):
 	global profit_list
 	global profit_l_first
 	global profit_avg_f
+	global profit_avg_num
 	global p_min_notification
 	global p_max_notification
 	data_ = start()
@@ -247,13 +250,21 @@ def check(kk):
 		if ch_notify >= 2:
 			if workers0 != workers1 and worker_notification:
 				bot.send_message(msg_id, strings.workers_active + str(total_workers))
-		profit_list.append(data_[4])
-		if profit_l_first:
-			profit_avg_f = data_[4]
-		if len(profit_list) == 10:
+
+		len_list_p = 10
+		if profit_l_first and len(profit_list) < len_list_p:
+			profit_list.append(data_[4])
 			profit_avg_f = sum(profit_list)/len(profit_list)
-			profit_list = []
+		if len(profit_list) == len_list_p:
+			profit_avg_f = sum(profit_list)/len(profit_list)
+			profit_list[profit_avg_num] = data_[4]
+			profit_avg_num += 1
+			if profit_avg_num == len_list_p:
+				profit_avg_num = 0
 			profit_l_first = False
+		print('profit_list ' + str(profit_list))
+		print(str(profit_avg_f))
+
 		if profit_avg_f < min_profit_n != 0.0 and not p_min_notification:
 			bot.send_message(msg_id, strings.notification_profit_min_alert + '\n' + strings.profit_per_day + str(
 				profit_avg_f) + ' ' + curr)

@@ -1,5 +1,6 @@
 import configparser
 
+
 def create_config(path):
 	config = configparser.ConfigParser()
 	config.add_section('settings')
