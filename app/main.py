@@ -93,6 +93,7 @@ workers1 = 0
 ch_notify = False
 profit_list = []
 profit_l_first = True
+curr_changed = False
 profit_avg_f = 0.0
 profit_avg_num = 0
 k = 0
@@ -210,11 +211,14 @@ def set_language(language):
 def set_currency(currency):
 	global curr
 	global price
-
-	curr = currency
-	price = 'http://api.coindesk.com/v1/bpi/currentprice/' + curr + '.json'
-	config.set('settings', 'currency', curr)
-	save_config()
+	global curr_changed
+	curr_old = config.get('settings', 'currency')
+	if curr_old != currency:
+		curr = currency
+		price = 'http://api.coindesk.com/v1/bpi/currentprice/' + curr + '.json'
+		config.set('settings', 'currency', curr)
+		save_config()
+		curr_changed = True
 
 
 def check_address(address):
@@ -238,6 +242,7 @@ def check(kk):
 	global profit_avg_num
 	global p_min_notification
 	global p_max_notification
+	global curr_changed
 	data_ = start()
 	if kk != 3:
 		if kk % 2 == 0:
@@ -252,6 +257,10 @@ def check(kk):
 				bot.send_message(msg_id, strings.workers_active + str(total_workers))
 
 		len_list_p = 10
+		if curr_changed:
+			profit_list = []
+			profit_l_first = True
+			curr_changed = False
 		if profit_l_first and len(profit_list) < len_list_p:
 			profit_list.append(data_[4])
 			profit_avg_f = sum(profit_list)/len(profit_list)
@@ -262,8 +271,6 @@ def check(kk):
 			if profit_avg_num == len_list_p:
 				profit_avg_num = 0
 			profit_l_first = False
-		print('profit_list ' + str(profit_list))
-		print(str(profit_avg_f))
 
 		if profit_avg_f < min_profit_n != 0.0 and not p_min_notification:
 			bot.send_message(msg_id, strings.notification_profit_min_alert + '\n' + strings.profit_per_day + str(
