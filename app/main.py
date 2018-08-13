@@ -272,21 +272,22 @@ def check(kk):
 				profit_avg_num = 0
 			profit_l_first = False
 
+		profit_avg_f_ = float('{:.2f}'.format(profit_avg_f))
 		if profit_avg_f < min_profit_n != 0.0 and not p_min_notification:
 			bot.send_message(msg_id, strings.notification_profit_min_alert + '\n' + strings.profit_per_day + str(
-				profit_avg_f) + ' ' + curr)
+				profit_avg_f_) + ' ' + curr)
 			p_min_notification = True
 		if profit_avg_f > min_profit_n != 0.0 and p_min_notification:
 			bot.send_message(msg_id, strings.notification_profit_min_no + '\n' + strings.profit_per_day + str(
-				profit_avg_f) + ' ' + curr)
+				profit_avg_f_) + ' ' + curr)
 			p_min_notification = False
 		if profit_avg_f > max_profit_n != 0.0 and not p_max_notification:
 			bot.send_message(msg_id, strings.notification_profit_max_alert + '\n' + strings.profit_per_day + str(
-				profit_avg_f) + ' ' + curr)
+				profit_avg_f_) + ' ' + curr)
 			p_max_notification = True
 		if profit_avg_f < max_profit_n != 0.0 and p_max_notification:
 			bot.send_message(msg_id, strings.notification_profit_max_no + '\n' + strings.profit_per_day + str(
-				profit_avg_f) + ' ' + curr)
+				profit_avg_f_) + ' ' + curr)
 			p_max_notification = False
 	else:
 		int(data_[2])
@@ -485,8 +486,12 @@ def a(message):
 def _stop_mining_monitoring(message):
 	if message.chat.id == msg_id:
 		global monitor
+		global p_min_notification
+		global p_max_notification
 		if monitor:
 			monitor = False
+			p_min_notification = False
+			p_max_notification = False
 			bot.send_message(msg_id, strings.monitor_stop)
 			config.set('settings', 'monitor', '0')
 			save_config()
@@ -519,7 +524,10 @@ def _0set_language():
 	button_ru = types.InlineKeyboardButton(text=common_str.ru, callback_data='ru')
 	button_en = types.InlineKeyboardButton(text=common_str.en, callback_data='en')
 	keyboard.add(button_ru, button_en)
-	bot.send_message(msg_id, common_str.select_lang, reply_markup=keyboard)
+	if config.get('settings', 'language') == '':
+		bot.send_message(msg_id, common_str.select_lang, reply_markup=keyboard)
+	else:
+		bot.send_message(msg_id, strings.lang_w, reply_markup=keyboard)
 
 
 def _set_language(message):
@@ -528,10 +536,14 @@ def _set_language(message):
 		global monitor
 		global lang_lock
 		global m_fail
+		global p_min_notification
+		global p_max_notification
 		if not lang_lock:
 			lang_lock = True
 			ms_b = monitor
 			monitor = False
+			p_min_notification = False
+			p_max_notification = False
 			_0set_language()
 			lt = lang
 			while not lang_sel:

@@ -20,6 +20,7 @@ disable_t = '❌ Disable threshold'
 select_curr = '✅ Select the currency'
 
 lang_e = '❌ This language has already been selected'
+lang_w = '⏳ This action may take some time'
 
 mining_algo = '💎 Mining algorithms: '
 workers_active = '⛏ Active workers: '
