@@ -300,14 +300,11 @@ def set_keyboard(arg, rw):
 	kb_start_m = types.KeyboardButton(text=strings.keyboard_start_monitor)
 	kb_stop_m = types.KeyboardButton(text=strings.keyboard_stop_monitor)
 	kb_f_set_a = types.KeyboardButton(text=strings.keyboard_first_set_address)
-	kb_set_a = types.KeyboardButton(text=strings.keyboard_set_address)
-	kb_set_c = types.KeyboardButton(text=strings.keyboard_set_currency)
-	kb_set_l = types.KeyboardButton(text=strings.keyboard_set_language)
-	kb_set_m_n = types.KeyboardButton(text=strings.keyboard_set_monitor_n)
+	kb_settings = types.KeyboardButton(text=strings.keyboard_settings)
 	if arg == 0:
-		keyboard.add(kb_f_set_a, kb_set_c)
+		keyboard.add(kb_f_set_a)
 	if arg == 1:
-		keyboard.add(kb_start_m, kb_stop_m, kb_set_m_n, kb_set_a, kb_set_c, kb_set_l, kb_data)
+		keyboard.add(kb_start_m, kb_stop_m, kb_data, kb_settings)
 
 
 def check_pr_err_():
@@ -504,6 +501,26 @@ def a(message):
 	_stop_mining_monitoring(message)
 
 
+def _settings_menu(message):
+	if message.chat.id == msg_id:
+		keyboard = types.InlineKeyboardMarkup()
+		btn_s_addr = types.InlineKeyboardButton(text=strings.keyboard_set_address, callback_data='set_addr')
+		btn_s_curr = types.InlineKeyboardButton(text=strings.keyboard_set_currency, callback_data='set_curr')
+		btn_s_lang = types.InlineKeyboardButton(text=strings.keyboard_set_language, callback_data='set_lang')
+		btn_s_mon_n = types.InlineKeyboardButton(text=strings.keyboard_set_monitor_n, callback_data='set_mon_n')
+		button_cancel_sm = types.InlineKeyboardButton(text=strings.cancel, callback_data='cancel')
+		keyboard.row(btn_s_addr, btn_s_curr)
+		keyboard.row(btn_s_lang)
+		keyboard.row(btn_s_mon_n)
+		keyboard.row(button_cancel_sm)
+		bot.send_message(msg_id, strings.keyboard_settings, reply_markup=keyboard)
+
+
+@bot.message_handler(commands=[common_str.settings_menu])
+def a(message):
+	_settings_menu(message)
+
+
 def _set_address(message):
 	if message.chat.id == msg_id:
 		global set_a
@@ -519,50 +536,54 @@ def a(message):
 	_set_address(message)
 
 
-def _0set_language():
-	keyboard = types.InlineKeyboardMarkup()
-	button_ru = types.InlineKeyboardButton(text=common_str.ru, callback_data='ru')
-	button_en = types.InlineKeyboardButton(text=common_str.en, callback_data='en')
-	keyboard.add(button_ru, button_en)
-	if config.get('settings', 'language') == '':
+def __set_language():
+	global lang_sel
+	global monitor
+	global lang_lock
+	global m_fail
+	global p_min_notification
+	global p_max_notification
+	if not lang_lock:
+		lang_lock = True
+		ms_b = monitor
+		monitor = False
+		p_min_notification = False
+		p_max_notification = False
+		keyboard = types.InlineKeyboardMarkup()
+		button_ru = types.InlineKeyboardButton(text=common_str.ru, callback_data='ru')
+		button_en = types.InlineKeyboardButton(text=common_str.en, callback_data='en')
+		keyboard.add(button_ru, button_en)
 		bot.send_message(msg_id, common_str.select_lang, reply_markup=keyboard)
-	else:
-		bot.send_message(msg_id, strings.lang_w, reply_markup=keyboard)
+		lt = lang
+		while not lang_sel:
+			if monitor:
+				m_fail = True
+				break
+		lang_sel = False
+		lang_lock = False
+		if lt != lang:
+			bot.send_message(msg_id, common_str.restarting)
+			subprocess.call('chmod +x restart.sh', shell=True)
+			subprocess.Popen('./restart.sh', shell=True)
+		else:
+			if not m_fail:
+				bot.send_message(msg_id, strings.lang_e)
+				if ms_b:
+					bot.send_message(msg_id, strings.monitor_restart)
+					config.set('settings', 'monitor', '0')
+					save_config()
 
 
 def _set_language(message):
 	if message.chat.id == msg_id:
-		global lang_sel
-		global monitor
-		global lang_lock
-		global m_fail
-		global p_min_notification
-		global p_max_notification
-		if not lang_lock:
-			lang_lock = True
-			ms_b = monitor
-			monitor = False
-			p_min_notification = False
-			p_max_notification = False
-			_0set_language()
-			lt = lang
-			while not lang_sel:
-				if monitor:
-					m_fail = True
-					break
-			lang_sel = False
-			lang_lock = False
-			if lt != lang:
-				bot.send_message(msg_id, common_str.restarting)
-				subprocess.call('chmod +x restart.sh', shell=True)
-				subprocess.Popen('./restart.sh', shell=True)
-			else:
-				if not m_fail:
-					bot.send_message(msg_id, strings.lang_e)
-					if ms_b:
-						bot.send_message(msg_id, strings.monitor_restart)
-						config.set('settings', 'monitor', '0')
-						save_config()
+		if monitor:
+			keyboard = types.InlineKeyboardMarkup()
+			button_ok = types.InlineKeyboardButton(text=strings.yes, callback_data='sl_ok')
+			button_cancel_sl = types.InlineKeyboardButton(text=strings.cancel, callback_data='cancel')
+			keyboard.add(button_ok, button_cancel_sl)
+			bot.send_message(msg_id, strings.lang_w, reply_markup=keyboard)
+		else:
+			__set_language()
 
 
 @bot.message_handler(commands=[common_str.set_language])
@@ -640,6 +661,16 @@ def a(call):
 	global set_pr_min
 	global set_pr_max
 	if call.message:
+
+		if call.data == 'set_addr':
+			_set_address(call.message)
+		if call.data == 'set_curr':
+			_set_currency(call.message)
+		if call.data == 'set_lang':
+			_set_language(call.message)
+		if call.data == 'set_mon_n':
+			_set_notifications(call.message)
+
 		if call.data == 'cancel':
 			bot.edit_message_text(chat_id=call.message.chat.id, message_id=call.message.message_id,
 								  text=strings.cancelled)
@@ -679,6 +710,10 @@ def a(call):
 		if call.data == 'RUB':
 			bot.edit_message_text(chat_id=call.message.chat.id, message_id=call.message.message_id, text=common_str.RUB)
 			convert_t_curr_and_set(call.data)
+
+		if call.data == 'sl_ok':
+			bot.delete_message(chat_id=call.message.chat.id, message_id=call.message.message_id)
+			__set_language()
 
 		if call.data == 'ru':
 			if m_fail:
@@ -790,24 +825,17 @@ def a(message):
 			_start_mining_monitoring(message)
 		if message.text == strings.keyboard_stop_monitor:
 			_stop_mining_monitoring(message)
-		if message.text == strings.keyboard_set_address or message.text == strings.keyboard_first_set_address:
+		if message.text == strings.keyboard_first_set_address:
 			_set_address(message)
-		if message.text == strings.keyboard_set_currency:
-			_set_currency(message)
-		if message.text == strings.keyboard_set_language:
-			_set_language(message)
-		if message.text == strings.keyboard_set_monitor_n:
-			_set_notifications(message)
+		if message.text == strings.keyboard_settings:
+			_settings_menu(message)
 
 		if set_a or set_pr_min or set_pr_max:
 			if message.text != strings.keyboard_data \
 					and message.text != strings.keyboard_start_monitor \
 					and message.text != strings.keyboard_stop_monitor \
-					and message.text != strings.keyboard_set_address \
 					and message.text != strings.keyboard_first_set_address \
-					and message.text != strings.keyboard_set_currency \
-					and message.text != strings.keyboard_set_language \
-					and message.text != strings.keyboard_set_monitor_n:
+					and message.text != strings.keyboard_settings:
 				if set_a:
 					set_address(message.text)
 				if set_pr_min:
