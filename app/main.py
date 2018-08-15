@@ -426,10 +426,20 @@ def _get_mining_data(message):
 			check(3)
 		except:
 			bot.send_message(msg_id, strings.url_error, reply_markup=keyboard)
+
 		if profit_avg_f != 0.0 and monitor:
-			avg_str_c = strings.avg_profit_per_day + str(profit_avg_f) + ' ' + curr + '\n'
+			avg_str_c = strings.avg_profit_per_day
+			if len(profit_list) > 1 and not curr_changed:
+				profit_avg_f_btc = profit_avg_f/price_currency_int
+				profit_avg_f_btc = float('{:.8f}'.format(profit_avg_f_btc))
+				profit_avg_f_ = float('{:.2f}'.format(profit_avg_f))
+				avg_str_c += str(profit_avg_f_btc) + ' BTC' + ' (' + str(profit_avg_f_) + ' ' \
+							+ curr + ')' + '\n'
+			else:
+				avg_str_c += ' -\n'
 		else:
 			avg_str_c = ''
+
 		str_send = '1 BTC = ' + str(price_currency_int) + ' ' + curr + '\n\n' + strings.mining_algo + str(
 			', '.join(str(v) for v in w) + '\n' + strings.workers_active + str(
 				total_workers) + '\n' + strings.profit_per_day + str(profit_btc_day) + ' BTC (' + str(
