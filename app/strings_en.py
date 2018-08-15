@@ -26,6 +26,7 @@ lang_w = '⚠️ This action will reset the monitoring and take some time. Conti
 mining_algo = '💎 Mining algorithms: '
 workers_active = '⛏ Active workers: '
 profit_per_day = '💸 Profit per day: '
+avg_profit_per_day = '📊 Average: '
 unpaid = '💰 Unpaid balance: '
 
 forbidden = '❌ Access is denied'
@@ -56,7 +57,7 @@ set_notification_profit_min = '📉'
 set_notification_profit_max = '📈'
 
 notification_profit_min_help = '📉 Minimum profit threshold\nSpecify in'
-notification_profit_max_help = '📉 Maximum profit threshold\nSpecify in'
+notification_profit_max_help = '📈 Maximum profit threshold\nSpecify in'
 notification_profit_error = '⚠️ You only need to enter an integer or fractional number'
 notification_profit_ok = '🆗'
 notification_profit_min_alert = '📉 Profit fell below the threshold'

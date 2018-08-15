@@ -426,11 +426,14 @@ def _get_mining_data(message):
 			check(3)
 		except:
 			bot.send_message(msg_id, strings.url_error, reply_markup=keyboard)
-
+		if profit_avg_f != 0.0 and monitor:
+			avg_str_c = strings.avg_profit_per_day + str(profit_avg_f) + ' ' + curr + '\n'
+		else:
+			avg_str_c = ''
 		str_send = '1 BTC = ' + str(price_currency_int) + ' ' + curr + '\n\n' + strings.mining_algo + str(
 			', '.join(str(v) for v in w) + '\n' + strings.workers_active + str(
 				total_workers) + '\n' + strings.profit_per_day + str(profit_btc_day) + ' BTC (' + str(
-				profit_fiat_day) + ' ' + curr + ')\n' + strings.unpaid + str(balance_btc) + ' BTC (' + str(
+				profit_fiat_day) + ' ' + curr + ')\n' + avg_str_c + strings.unpaid + str(balance_btc) + ' BTC (' + str(
 				balance_fiat) + ' ' + curr + ')')
 		str_send = str_send.encode('utf-8')
 		bot.send_message(msg_id, str_send, reply_markup=keyboard)
@@ -625,7 +628,7 @@ def _set_notifications(message):
 			btn_min_t_dis = False
 		else:
 			btn_min_p_n_label = strings.notification_false + strings.notification_true + strings.set_notification_profit_min
-			btn_min_p_n_label += str(int(float(config.get('settings', 'min_profit_n'))))
+			btn_min_p_n_label += str(float('{:.2f}'.format(float(config.get('settings', 'min_profit_n')))))
 			btn_min_t_dis = True
 		min_p_callback = 'pr_min'
 
@@ -634,7 +637,7 @@ def _set_notifications(message):
 			btn_max_t_dis = False
 		else:
 			btn_max_p_n_label = strings.notification_false + strings.notification_true + strings.set_notification_profit_max
-			btn_max_p_n_label += str(int(float(config.get('settings', 'max_profit_n'))))
+			btn_max_p_n_label += str(float('{:.2f}'.format(float(config.get('settings', 'max_profit_n')))))
 			btn_max_t_dis = True
 		max_p_callback = 'pr_max'
 
@@ -672,8 +675,7 @@ def a(call):
 			_set_notifications(call.message)
 
 		if call.data == 'cancel':
-			bot.edit_message_text(chat_id=call.message.chat.id, message_id=call.message.message_id,
-								  text=strings.cancelled)
+			bot.delete_message(chat_id=call.message.chat.id, message_id=call.message.message_id)
 
 		if call.data == 'cancel_sa':
 			bot.edit_message_text(chat_id=call.message.chat.id, message_id=call.message.message_id,
