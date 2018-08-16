@@ -431,24 +431,30 @@ def _get_mining_data(message):
 		except:
 			bot.send_message(msg_id, strings.url_error, reply_markup=keyboard)
 
-		if profit_avg_f != 0.0 and monitor:
-			avg_str_c = strings.avg_profit_per_day
-			if len(profit_list) > 10 and not curr_changed:
-				profit_avg_f_btc = profit_avg_f/price_currency_int
-				profit_avg_f_btc = float('{:.8f}'.format(profit_avg_f_btc))
-				profit_avg_f_ = float('{:.2f}'.format(profit_avg_f))
-				avg_str_c += str(profit_avg_f_btc) + ' BTC' + ' (' + str(profit_avg_f_) + ' ' \
-							+ curr + ')' + '\n'
+		if total_workers != 0:
+			if profit_avg_f != 0.0 and monitor:
+				avg_str_c = strings.avg_profit_per_day
+				if len(profit_list) > 3 and not curr_changed:
+					profit_avg_f_btc = profit_avg_f/price_currency_int
+					profit_avg_f_btc = float('{:.8f}'.format(profit_avg_f_btc))
+					profit_avg_f_ = float('{:.2f}'.format(profit_avg_f))
+					avg_str_c += str(profit_avg_f_btc) + ' BTC' + ' (' + str(profit_avg_f_) + ' ' \
+								 + curr + ')' + '\n'
+				else:
+					avg_str_c += ' -\n'
 			else:
-				avg_str_c += ' -\n'
+				avg_str_c = ''
+			str_ma_c = strings.mining_algo + str(', '.join(str(v) for v in w)) + '\n'
+			str_ppd_c = strings.profit_per_day + str(profit_btc_day) + ' BTC (' + str(
+				profit_fiat_day) + ' ' + curr + ')\n'
 		else:
+			str_ma_c = ''
+			str_ppd_c = ''
 			avg_str_c = ''
 
-		str_send = '1 BTC = ' + str(price_currency_int) + ' ' + curr + '\n\n' + strings.mining_algo + str(
-			', '.join(str(v) for v in w) + '\n' + strings.workers_active + str(
-				total_workers) + '\n' + strings.profit_per_day + str(profit_btc_day) + ' BTC (' + str(
-				profit_fiat_day) + ' ' + curr + ')\n' + avg_str_c + strings.unpaid + str(balance_btc) + ' BTC (' + str(
-				balance_fiat) + ' ' + curr + ')')
+		str_send = '1 BTC = ' + str(price_currency_int) + ' ' + curr + '\n\n' + str_ma_c + strings.workers_active + str(
+				total_workers) + '\n' + str_ppd_c + avg_str_c + strings.unpaid + str(balance_btc) + ' BTC (' + str(
+				balance_fiat) + ' ' + curr + ')'
 		str_send = str_send.encode('utf-8')
 		bot.send_message(msg_id, str_send, reply_markup=keyboard)
 
@@ -873,7 +879,7 @@ if lang != '' and msg_id != 0:
 		else:
 			bot.send_message(msg_id, strings.what_do, reply_markup=keyboard)
 
-if __name__ == '__main__':
+while True:
 	try:
 		bot.polling(none_stop=True)
 	except Exception as e:
