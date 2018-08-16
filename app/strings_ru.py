@@ -57,7 +57,7 @@ set_notification_profit_min = '📉'
 set_notification_profit_max = '📈'
 
 notification_profit_min_help = '📉 Минимальный порог прибыли\nУкажите в'
-notification_profit_max_help = '📉 Максимальный порог прибыли\nУкажите в'
+notification_profit_max_help = '📈 Максимальный порог прибыли\nУкажите в'
 notification_profit_error = '⚠️ Нужно ввести только целое или дробное число'
 notification_profit_ok = '🆗 Записано'
 notification_profit_min_alert = '📉 Прибыль опустилась ниже порога'

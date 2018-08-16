@@ -260,7 +260,7 @@ def check(kk):
 			if workers0 != workers1 and worker_notification:
 				bot.send_message(msg_id, strings.workers_active + str(total_workers))
 
-		len_list_p = 10
+		len_list_p = 30
 		if curr_changed:
 			profit_list = []
 			profit_l_first = True
@@ -433,7 +433,7 @@ def _get_mining_data(message):
 
 		if profit_avg_f != 0.0 and monitor:
 			avg_str_c = strings.avg_profit_per_day
-			if len(profit_list) > 1 and not curr_changed:
+			if len(profit_list) > 10 and not curr_changed:
 				profit_avg_f_btc = profit_avg_f/price_currency_int
 				profit_avg_f_btc = float('{:.8f}'.format(profit_avg_f_btc))
 				profit_avg_f_ = float('{:.2f}'.format(profit_avg_f))
