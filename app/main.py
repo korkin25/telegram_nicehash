@@ -238,7 +238,6 @@ def check_address(address):
 def check(kk):
 	global workers0
 	global workers1
-	global total_workers
 	global ch_notify
 	global profit_list
 	global profit_l_first
@@ -247,12 +246,12 @@ def check(kk):
 	global p_min_notification
 	global p_max_notification
 	global curr_changed
-	data_ = start()
+	start()
 	if kk != 3:
 		if kk % 2 == 0:
-			workers0 = int(data_[2])
+			workers0 = total_workers
 		if kk % 2 == 1:
-			workers1 = int(data_[2])
+			workers1 = total_workers
 		ch_notify += 1
 		if ch_notify > 2:
 			ch_notify = 2  # Чтобы лишний раз не расходовать память
@@ -266,35 +265,33 @@ def check(kk):
 			profit_l_first = True
 			curr_changed = False
 		if profit_l_first and len(profit_list) < len_list_p:
-			profit_list.append(data_[4])
-			profit_avg_f = sum(profit_list)/len(profit_list)
+			profit_list.append(profit_fiat_day)
+			profit_avg_f = sum(profit_list) / len(profit_list)
 		if len(profit_list) == len_list_p:
-			profit_avg_f = sum(profit_list)/len(profit_list)
-			profit_list[profit_avg_num] = data_[4]
+			profit_avg_f = sum(profit_list) / len(profit_list)
+			profit_list[profit_avg_num] = profit_fiat_day
 			profit_avg_num += 1
 			if profit_avg_num == len_list_p:
 				profit_avg_num = 0
 			profit_l_first = False
 
 		profit_avg_f_ = float('{:.2f}'.format(profit_avg_f))
+		str_pt = strings.profit_per_day + str(profit_btc_day) + ' BTC (' + str(profit_fiat_day) + ' ' +\
+				 curr + ') \n' + strings.avg_profit_per_day +\
+				 str(float('{:.8f}'.format((profit_avg_f / price_currency_int)))) + ' BTC (' + \
+				 str(profit_avg_f_) + ' ' + curr + ')'
 		if profit_avg_f < min_profit_n != 0.0 and not p_min_notification:
-			bot.send_message(msg_id, strings.notification_profit_min_alert + '\n' + strings.profit_per_day + str(
-				profit_avg_f_) + ' ' + curr)
+			bot.send_message(msg_id, strings.notification_profit_min_alert + '\n' + str_pt)
 			p_min_notification = True
 		if profit_avg_f > min_profit_n != 0.0 and p_min_notification:
-			bot.send_message(msg_id, strings.notification_profit_min_no + '\n' + strings.profit_per_day + str(
-				profit_avg_f_) + ' ' + curr)
+			bot.send_message(msg_id, strings.notification_profit_min_no + '\n' + str_pt)
 			p_min_notification = False
 		if profit_avg_f > max_profit_n != 0.0 and not p_max_notification:
-			bot.send_message(msg_id, strings.notification_profit_max_alert + '\n' + strings.profit_per_day + str(
-				profit_avg_f_) + ' ' + curr)
+			bot.send_message(msg_id, strings.notification_profit_max_alert + '\n' + str_pt)
 			p_max_notification = True
 		if profit_avg_f < max_profit_n != 0.0 and p_max_notification:
-			bot.send_message(msg_id, strings.notification_profit_max_no + '\n' + strings.profit_per_day + str(
-				profit_avg_f_) + ' ' + curr)
+			bot.send_message(msg_id, strings.notification_profit_max_no + '\n' + str_pt)
 			p_max_notification = False
-	else:
-		int(data_[2])
 
 
 def set_keyboard(arg, rw):
@@ -435,7 +432,7 @@ def _get_mining_data(message):
 			if profit_avg_f != 0.0 and monitor:
 				avg_str_c = strings.avg_profit_per_day
 				if len(profit_list) > 3 and not curr_changed:
-					profit_avg_f_btc = profit_avg_f/price_currency_int
+					profit_avg_f_btc = profit_avg_f / price_currency_int
 					profit_avg_f_btc = float('{:.8f}'.format(profit_avg_f_btc))
 					profit_avg_f_ = float('{:.2f}'.format(profit_avg_f))
 					avg_str_c += str(profit_avg_f_btc) + ' BTC' + ' (' + str(profit_avg_f_) + ' ' \
