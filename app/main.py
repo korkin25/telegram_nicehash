@@ -14,6 +14,7 @@ import common_str
 import telebot
 from currency_converter import CurrencyConverter
 from telebot import types
+from telebot import apihelper
 
 parser = argparse.ArgumentParser()
 parser.add_argument('-s', '--socks', action='store', dest='s', help='SOCKS5 proxy')
@@ -44,11 +45,14 @@ if rr.s is not None:
 
 if config.get('settings', 'socks5') != '':
 	socks5_s = config.get('settings', 'socks5')
-	socks5_l = re.split(r':', socks5_s)
-	import socks
-	import socket
-	socks.set_default_proxy(socks.SOCKS5, socks5_l[0], int(socks5_l[1]))
-	socket.socket = socks.socksocket
+	# Раскомментировать строки ниже для работы прокси на все соединения программы
+	# apihelper.proxy закомментировать
+	#socks5_l = re.split(r':', socks5_s)
+	#import socks
+	#import socket
+	#socks.set_default_proxy(socks.SOCKS5, socks5_l[0], int(socks5_l[1]))
+	#socket.socket = socks.socksocket
+	apihelper.proxy = {'https':'socks5://' + socks5_s}
 
 if rr.t is not None:
 	bot = telebot.TeleBot(rr.t)

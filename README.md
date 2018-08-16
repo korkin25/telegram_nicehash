@@ -1,5 +1,5 @@
 # Telegram bot for monitoring mining (NiceHash)
-The project uses the [NiceHash Viewer API](https://github.com/adityudhna/nicehash)
+The project uses the [NiceHash Viewer API](https://github.com/adityudhna/nicehash).
 
 ## Features
 - Shows the mining profitability, mining algorithms, unpaid balance
@@ -26,7 +26,7 @@ unzip master.zip
 cd telegram_nicehash-master/app
 python3 main.py -t bot_token_from_BotFather
 ```
-If you need a proxy to access the Internet, you can use ```-s``` key to enter the SOCKS5 proxy server.
+If you need a proxy to access Telegram, you can use ```-s``` key to enter the SOCKS5 proxy server.
 ```
 python3 main.py -s x.x.x.x:x
 ```
