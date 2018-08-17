@@ -85,6 +85,7 @@ if lang == 'en':
 stats = 'https://api.nicehash.com/api?method=stats.provider.ex&addr=' + addr
 price = 'http://api.coindesk.com/v1/bpi/currentprice/' + curr + '.json'
 
+fs_addr = False
 monitor = False
 loop_term = True
 lang_lock = False
@@ -184,6 +185,7 @@ def set_address(address):
 	global addr
 	global stats
 	global set_a
+	global fs_addr
 	global profit_list
 	global profit_l_first
 	if address == addr:
@@ -201,8 +203,12 @@ def set_address(address):
 			set_keyboard(1, 2)
 			bot.send_message(msg_id, strings.addr_ok, reply_markup=keyboard)
 			set_a = False
+			fs_addr = False
 		else:
-			bot.send_message(msg_id, strings.addr_invalid + '\n' + strings.addr_enter_new)
+			if fs_addr:
+				bot.send_message(msg_id, strings.addr_invalid)
+			else:
+				bot.send_message(msg_id, strings.addr_invalid + '\n' + strings.addr_enter_new)
 			set_a = False
 			addr = addr_
 			stats = stats_
@@ -250,7 +256,7 @@ def check(kk):
 	global p_min_notification
 	global p_max_notification
 	global curr_changed
-	start()
+	data_ = start()
 	if kk != 3:
 		if kk % 2 == 0:
 			workers0 = total_workers
@@ -296,6 +302,8 @@ def check(kk):
 		if profit_avg_f < max_profit_n != 0.0 and p_max_notification:
 			bot.send_message(msg_id, strings.notification_profit_max_no + '\n' + str_pt)
 			p_max_notification = False
+	else:
+		int(data_[2])
 
 
 def set_keyboard(arg, rw):
@@ -405,6 +413,7 @@ def set_pr_max_(pr_max):
 @bot.message_handler(commands=[common_str.start])
 def a(message):
 	global msg_id
+	global fs_addr
 	# Первый пользователь, отправивший команду start боту становится "владельцем"
 	# Запросы от других пользователей будут игнорироваться
 	if int(config.get("settings", "msg_id")) == 0:
@@ -418,10 +427,10 @@ def a(message):
 			bot.send_message(message.chat.id, strings.forbidden)
 		if message.chat.id == msg_id:
 			if addr == '':
-				set_keyboard(0, 1)
+				bot.send_message(msg_id, strings.addr_set, reply_markup=keyboard)
 			else:
 				set_keyboard(1, 2)
-			bot.send_message(msg_id, strings.what_do, reply_markup=keyboard)
+				bot.send_message(msg_id, strings.what_do, reply_markup=keyboard)
 
 
 def _get_mining_data(message):
@@ -843,24 +852,25 @@ def a(call):
 @bot.message_handler(content_types='text')
 def a(message):
 	if message.chat.id == msg_id:
-		if message.text == strings.keyboard_data:
-			_get_mining_data(message)
-		if message.text == strings.keyboard_start_monitor:
-			_start_mining_monitoring(message)
-		if message.text == strings.keyboard_stop_monitor:
-			_stop_mining_monitoring(message)
-		if message.text == strings.keyboard_first_set_address:
-			_set_address(message)
-		if message.text == strings.keyboard_settings:
-			_settings_menu(message)
+		if not fs_addr:
+			if message.text == strings.keyboard_data:
+				_get_mining_data(message)
+			if message.text == strings.keyboard_start_monitor:
+				_start_mining_monitoring(message)
+			if message.text == strings.keyboard_stop_monitor:
+				_stop_mining_monitoring(message)
+			if message.text == strings.keyboard_first_set_address:
+				_set_address(message)
+			if message.text == strings.keyboard_settings:
+				_settings_menu(message)
 
-		if set_a or set_pr_min or set_pr_max:
+		if set_a or fs_addr or set_pr_min or set_pr_max:
 			if message.text != strings.keyboard_data \
 					and message.text != strings.keyboard_start_monitor \
 					and message.text != strings.keyboard_stop_monitor \
 					and message.text != strings.keyboard_first_set_address \
 					and message.text != strings.keyboard_settings:
-				if set_a:
+				if set_a or fs_addr:
 					set_address(message.text)
 				if set_pr_min:
 					set_pr_min_(message.text)
@@ -870,8 +880,8 @@ def a(message):
 
 if lang != '' and msg_id != 0:
 	if addr == '':
-		set_keyboard(0, 1)
-		bot.send_message(msg_id, strings.what_do, reply_markup=keyboard)
+		fs_addr = True
+		bot.send_message(msg_id, strings.addr_set, reply_markup=keyboard)
 	else:
 		set_keyboard(1, 2)
 		if config.get('settings', 'monitor') == '1':
