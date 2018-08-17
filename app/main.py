@@ -56,7 +56,7 @@ if config.get('settings', 'socks5') != '':
 	#import socket
 	#socks.set_default_proxy(socks.SOCKS5, socks5_l[0], int(socks5_l[1]))
 	#socket.socket = socks.socksocket
-	apihelper.proxy = {'https':'socks5://' + socks5_s}
+	apihelper.proxy = {'https': 'socks5://' + socks5_s}
 
 if rr.t is not None:
 	bot = telebot.TeleBot(rr.t)
@@ -286,10 +286,14 @@ def check(kk):
 			profit_l_first = False
 
 		profit_avg_f_ = float('{:.2f}'.format(profit_avg_f))
-		str_pt = strings.profit_per_day + str(profit_btc_day) + ' BTC (' + str(profit_fiat_day) + ' ' +\
-				 curr + ') \n' + strings.avg_profit_per_day +\
+		str_pt = strings.profit_per_day + str(profit_btc_day) + ' BTC (' + str(profit_fiat_day) + ' ' + \
+				 curr + ')'
+		if len(profit_list) > 3:
+			str_pt += '\n' + strings.avg_profit_per_day + \
 				 str(float('{:.8f}'.format((profit_avg_f / price_currency_int)))) + ' BTC (' + \
 				 str(profit_avg_f_) + ' ' + curr + ')'
+		else:
+			str_pt += '\n' + strings.avg_profit_per_day + ' -\n'
 		if profit_avg_f < min_profit_n != 0.0 and not p_min_notification:
 			bot.send_message(msg_id, strings.notification_profit_min_alert + '\n' + str_pt)
 			p_min_notification = True
