@@ -13,18 +13,22 @@ import urllib.request
 import common_str
 import telebot
 from currency_converter import CurrencyConverter
-from telebot import types
 from telebot import apihelper
+from telebot import types
 
 parser = argparse.ArgumentParser()
+parser.add_argument('-r', '--reset', action='store_true', dest='r', help='reset settings')
 parser.add_argument('-s', '--socks', action='store', dest='s', help='SOCKS5 proxy')
 parser.add_argument('-t', '--token', action='store', dest='t', help='token')
 rr = parser.parse_args()
 
-path = "settings.ini"
+path = 'settings.ini'
+
+if rr.r:
+	subprocess.call('rm ' + path, shell=True)
 
 if not os.path.exists(path):
-	subprocess.call("python3 config_init.py", shell=True)
+	subprocess.call('python3 config_init.py', shell=True)
 
 config = configparser.ConfigParser()
 config.read(path)
@@ -583,6 +587,7 @@ def __set_language():
 		lang_lock = False
 		if lt != lang:
 			bot.send_message(msg_id, common_str.restarting)
+			subprocess.call("sed -i 's/\r//g' restart.sh", shell=True)
 			subprocess.call('chmod +x restart.sh', shell=True)
 			subprocess.Popen('./restart.sh', shell=True)
 		else:
