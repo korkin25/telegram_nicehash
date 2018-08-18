@@ -103,6 +103,8 @@ ch_notify = False
 profit_list = []
 profit_l_first = True
 curr_changed = False
+paid_notification = False
+unpaid_btc_b_ = 999.9
 profit_avg_f = 0.0
 profit_avg_num = 0
 k = 0
@@ -116,6 +118,11 @@ if config.get('settings', 'workers_n') == '1':
 	worker_notification = True
 else:
 	worker_notification = False
+
+if config.get('settings', 'paid_n') == '1':
+	paid_notification = True
+else:
+	paid_notification = False
 
 
 def start():
@@ -256,6 +263,7 @@ def check(kk):
 	global p_min_notification
 	global p_max_notification
 	global curr_changed
+	global unpaid_btc_b_
 	data_ = start()
 	if kk != 3:
 		if kk % 2 == 0:
@@ -269,7 +277,7 @@ def check(kk):
 			if workers0 != workers1 and worker_notification:
 				bot.send_message(msg_id, strings.workers_active + str(total_workers))
 
-		len_list_p = 30
+		len_list_p = 90
 		if curr_changed:
 			profit_list = []
 			profit_l_first = True
@@ -306,6 +314,14 @@ def check(kk):
 		if profit_avg_f < max_profit_n != 0.0 and p_max_notification:
 			bot.send_message(msg_id, strings.notification_profit_max_no + '\n' + str_pt)
 			p_max_notification = False
+
+		if paid_notification:
+			if balance_btc > 0.0005:
+				if unpaid_btc_b_ == 999.9:
+					unpaid_btc_b_ = balance_btc
+			if balance_btc < unpaid_btc_b_:
+				bot.send_message(msg_id, strings.notification_paid)
+				unpaid_btc_b_ = 999.9
 	else:
 		int(data_[2])
 
@@ -657,6 +673,7 @@ def _set_notifications(message):
 		else:
 			workers_n_callback = 'wo_1'
 			btn_workers_n_label = strings.notification_true
+		btn_workers_n_label += strings.set_notification_workers
 
 		if float(config.get('settings', 'min_profit_n')) == 0.0:
 			btn_min_p_n_label = strings.notification_true + strings.set_notification_profit_min
@@ -676,13 +693,24 @@ def _set_notifications(message):
 			btn_max_t_dis = True
 		max_p_callback = 'pr_max'
 
-		btn_workers_n_label += strings.set_notification_workers
+		paid_n_ = config.get('settings', 'paid_n')
+
+		if paid_n_ == '1':
+			paid_n_callback = 'pa_0'
+			btn_paid_n_label = strings.notification_false
+		else:
+			paid_n_callback = 'pa_1'
+			btn_paid_n_label = strings.notification_true
+		btn_paid_n_label += strings.set_notification_paid
 
 		button_workers_n = types.InlineKeyboardButton(text=btn_workers_n_label, callback_data=workers_n_callback)
 		button_min_p_n = types.InlineKeyboardButton(text=btn_min_p_n_label, callback_data=min_p_callback)
 		button_max_p_n = types.InlineKeyboardButton(text=btn_max_p_n_label, callback_data=max_p_callback)
+		button_paid_n = types.InlineKeyboardButton(text=btn_paid_n_label, callback_data=paid_n_callback)
 		button_cancel_n = types.InlineKeyboardButton(text=strings.cancel, callback_data='cancel')
-		keyboard.add(button_workers_n, button_min_p_n, button_max_p_n, button_cancel_n)
+		keyboard.row(button_workers_n, button_paid_n)
+		keyboard.row(button_min_p_n, button_max_p_n)
+		keyboard.row(button_cancel_n)
 		bot.send_message(msg_id, strings.notification_set_menu_msg, reply_markup=keyboard)
 
 
@@ -698,6 +726,7 @@ def a(call):
 	global worker_notification
 	global set_pr_min
 	global set_pr_max
+	global paid_notification
 	if call.message:
 
 		if call.data == 'set_addr':
@@ -813,6 +842,20 @@ def a(call):
 		if call.data == 'disable_max':
 			set_pr_max_('0')
 			bot.delete_message(chat_id=call.message.chat.id, message_id=call.message.message_id)
+
+		if call.data == 'pa_0':
+			config.set('settings', 'paid_n', '0')
+			save_config()
+			paid_notification = False
+			bot.edit_message_text(chat_id=call.message.chat.id, message_id=call.message.message_id,
+								  text=strings.notification_paid_disabled)
+
+		if call.data == 'pa_1':
+			config.set('settings', 'paid_n', '1')
+			save_config()
+			paid_notification = True
+			bot.edit_message_text(chat_id=call.message.chat.id, message_id=call.message.message_id,
+								  text=strings.notification_paid_enabled)
 
 		def save_pr_after_err(arg):
 			if arg == 0:

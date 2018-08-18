@@ -55,6 +55,7 @@ notification_false = '🔕 '
 set_notification_workers = 'Воркеры'
 set_notification_profit_min = '📉'
 set_notification_profit_max = '📈'
+set_notification_paid = 'Выплаты'
 
 notification_profit_min_help = '📉 Минимальный порог прибыли\nУкажите в'
 notification_profit_max_help = '📈 Максимальный порог прибыли\nУкажите в'
@@ -75,3 +76,7 @@ notification_workers_disabled = '🔕 Оповещения об изменени
 notification_workers_enabled = '🔔 Оповещения об изменении числа воркеров включены'
 notification_profit_min_disabled = '🔕 Оповещение минимального порога прибыли выключено'
 notification_profit_max_disabled = '🔕 Оповещение максимального порога прибыли выключено'
+
+notification_paid_disabled = '🔕 Оповещения о выплатах выключены'
+notification_paid_enabled = '🔔 Оповещения о выплатах включены'
+notification_paid = '💰 Произведена выплата'

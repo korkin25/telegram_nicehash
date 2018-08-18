@@ -15,6 +15,7 @@ def create_config(path):
 	config.set('settings', 'workers_n', '1')
 	config.set('settings', 'min_profit_n', '0.0')
 	config.set('settings', 'max_profit_n', '0.0')
+	config.set('settings', 'paid_n', '1')
 
 	with open(path, 'w') as config_file:
 		config.write(config_file)
