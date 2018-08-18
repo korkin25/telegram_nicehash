@@ -485,6 +485,12 @@ def _get_mining_data(message):
 		str_send = '1 BTC = ' + str(price_currency_int) + ' ' + curr + '\n\n' + str_ma_c + strings.workers_active + str(
 				total_workers) + '\n' + str_ppd_c + avg_str_c + strings.unpaid + str(balance_btc) + ' BTC (' + str(
 				balance_fiat) + ' ' + curr + ')'
+		
+		if p_min_notification:
+			str_send += '\n\n' + strings.notification_profit_min_alert
+		if p_max_notification:
+			str_send += '\n\n' + strings.notification_profit_max_alert
+
 		str_send = str_send.encode('utf-8')
 		bot.send_message(msg_id, str_send, reply_markup=keyboard)
 
