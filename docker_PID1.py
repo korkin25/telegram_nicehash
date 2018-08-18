@@ -3,11 +3,11 @@
 
 from subprocess import Popen
 from sys import argv
+from threading import Event
 
 args_l = argv
 del args_l[0]
 args_str = ' '.join(args_l)
 Popen("python3 main.py" + ' ' + args_str, shell=True)
 
-while True:
-	pass
+Event().wait()
