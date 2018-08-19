@@ -319,7 +319,7 @@ def check(kk):
 			if balance_btc > 0.0005:
 				if unpaid_btc_b_ == 999.9:
 					unpaid_btc_b_ = balance_btc
-			if balance_btc < unpaid_btc_b_:
+			if balance_btc < unpaid_btc_b_ != 999.9:
 				bot.send_message(msg_id, strings.notification_paid)
 				unpaid_btc_b_ = 999.9
 	else:
